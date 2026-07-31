@@ -62,6 +62,7 @@ export default function Console() {
   const [roster, setRoster] = useState({ going: [], notGoing: [], campaign: "" });
   const [pillarFilter, setPillarFilter] = useState(ANY);
   const [roleFilter, setRoleFilter] = useState(ANY);
+  const [typeFilter, setTypeFilter] = useState(ANY);
   const [loading, setLoading] = useState(true);
   const [needsSync, setNeedsSync] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -101,35 +102,6 @@ export default function Console() {
   useEffect(() => {
     loadVolunteers();
   }, [loadVolunteers]);
-
-  async function markAttended(entry, attended) {
-    // Optimistic: the tick should respond instantly on a phone at a venue,
-    // not after a round trip. loadRoster() reconciles on the next poll.
-    setRoster((prev) => ({
-      ...prev,
-      going: prev.going.map((r) =>
-        r.phone === entry.phone ? { ...r, attended } : r
-      ),
-      notGoing: prev.notGoing.map((r) =>
-        r.phone === entry.phone ? { ...r, attended } : r
-      ),
-    }));
-    try {
-      await fetch("/api/attendance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: entry.phone,
-          campaign: entry.campaign,
-          attended,
-        }),
-      });
-    } catch {
-      // Next poll will show the true state.
-    } finally {
-      loadRoster();
-    }
-  }
 
   async function syncVolunteers() {
     setSyncing(true);
@@ -258,14 +230,21 @@ export default function Console() {
     return [...set].sort();
   }, [volunteers]);
 
+  const typeOptions = useMemo(() => {
+    const set = new Set();
+    volunteers.forEach((v) => v.type && set.add(v.type));
+    return [...set].sort();
+  }, [volunteers]);
+
   const visible = useMemo(
     () =>
       volunteers.filter(
         (v) =>
+          (typeFilter === ANY || v.type === typeFilter) &&
           (pillarFilter === ANY || (v.pillars || []).includes(pillarFilter)) &&
           (roleFilter === ANY || (v.roles || []).includes(roleFilter))
       ),
-    [volunteers, pillarFilter, roleFilter]
+    [volunteers, typeFilter, pillarFilter, roleFilter]
   );
 
   // "Select all" and the send both act on what you can currently see — filtering
@@ -545,8 +524,25 @@ export default function Console() {
 
             {volunteers.length > 0 && (
               <>
-                {(pillarOptions.length > 0 || roleOptions.length > 0) && (
+                {(typeOptions.length > 1 ||
+                  pillarOptions.length > 0 ||
+                  roleOptions.length > 0) && (
                   <div className="row" style={{ marginBottom: 10, flexWrap: "wrap" }}>
+                    {/* Only worth showing once both kinds of people exist. */}
+                    {typeOptions.length > 1 && (
+                      <select
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value)}
+                        aria-label="Filter by volunteer or beneficiary"
+                      >
+                        <option value={ANY}>Everyone</option>
+                        {typeOptions.map((t) => (
+                          <option key={t} value={t}>
+                            {t}s
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     {pillarOptions.length > 0 && (
                       <select
                         value={pillarFilter}
@@ -575,11 +571,14 @@ export default function Console() {
                         ))}
                       </select>
                     )}
-                    {(pillarFilter !== ANY || roleFilter !== ANY) && (
+                    {(pillarFilter !== ANY ||
+                      roleFilter !== ANY ||
+                      typeFilter !== ANY) && (
                       <button
                         onClick={() => {
                           setPillarFilter(ANY);
                           setRoleFilter(ANY);
+                          setTypeFilter(ANY);
                         }}
                       >
                         Clear
@@ -627,28 +626,11 @@ export default function Console() {
                         />
                         <span className="nm">
                           {v.name || "—"}
-                          {(v.pillars?.length > 0 ||
-                            v.roles?.length > 0 ||
-                            v.attended?.length > 0) && (
+                          {(v.pillars?.length > 0 || v.roles?.length > 0) && (
                             <span className="sub">
                               {[...(v.pillars || []), ...(v.roles || [])]
                                 .filter(Boolean)
                                 .join(" · ")}
-                              {v.attended?.length > 0 && (
-                                <>
-                                  {(v.pillars?.length || v.roles?.length) ? " · " : ""}
-                                  {/* A returning volunteer is the one you most
-                                      want to re-invite when headcount is short. */}
-                                  <span
-                                    className="hist"
-                                    title={v.attended
-                                      .map((a) => a.event)
-                                      .join("\n")}
-                                  >
-                                    {v.attended.length} attended
-                                  </span>
-                                </>
-                              )}
                             </span>
                           )}
                         </span>
@@ -762,17 +744,6 @@ export default function Console() {
                     {displayName(r)}
                     <div className="muted">{r.raw}</div>
                   </span>
-                  {/* Only people who said yes can turn up. */}
-                  {r.answer === "yes" && (
-                    <label className="attend" title="Mark as attended">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(r.attended)}
-                        onChange={(e) => markAttended(r, e.target.checked)}
-                      />
-                      <span className="muted">here</span>
-                    </label>
-                  )}
                   <span className="when">
                     {new Date(r.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>

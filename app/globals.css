@@ -122,16 +122,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .rosterline.no .dot { background: var(--no); }
 .rosterline .who { flex: 1; }
 .rosterline .when { color: var(--muted); font-size: 12px; }
-/* Attendance tick — turns an RSVP into a record of who actually showed. */
-.rosterline .attend {
-  display: inline-flex; align-items: center; gap: 4px;
-  cursor: pointer; font-size: 12px; flex: none;
-}
-/* Past events attended — the signal for "re-invite this person". */
-.person .hist {
-  border-radius: 999px; padding: 0 6px;
-  background: #eef7f2; color: var(--yes); border: 1px solid #c6e3d5;
-}
 
 .muted { color: var(--muted); font-size: 13px; }
 .err {

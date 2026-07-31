@@ -6,41 +6,52 @@ import {
   countVolunteers,
   volunteersConfigured,
 } from "../../../lib/volunteers.js";
+import { listBeneficiaries } from "../../../lib/beneficiaries.js";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Recipients for the console.
+ * Recipients for the console — volunteers AND beneficiaries.
  *
- * Reads the Supabase `volunteers` table when it's configured AND populated.
- * An empty table falls back to the sheet rather than showing an empty console —
- * so adding this feature can't strand a demo behind a sync nobody ran yet.
- * `needsSync` tells the UI to nudge.
+ * Both are people the organiser broadcasts to, so both belong here even though
+ * they live in separate tables; splitting them without merging here would make
+ * every beneficiary silently unreachable. Each carries `type` so the console
+ * can filter.
+ *
+ * Reads Supabase when configured AND populated; an empty or missing table falls
+ * back to the sheet rather than showing an empty console, so this can't strand a
+ * demo behind a migration or a sync nobody ran.
  */
 export async function GET() {
   try {
-    let volunteers = null;
+    let people = null;
     let source;
     let needsSync = false;
 
     if (volunteersConfigured()) {
       try {
-        if ((await countVolunteers()) > 0) {
-          volunteers = await listVolunteers();
+        const [count, beneficiaries] = await Promise.all([
+          countVolunteers(),
+          // The beneficiaries table may not exist yet — that must not take the
+          // whole recipients pane down with it.
+          listBeneficiaries().catch(() => []),
+        ]);
+        if (count > 0 || beneficiaries.length > 0) {
+          const volunteers = count > 0 ? await listVolunteers() : [];
+          people = [...volunteers, ...beneficiaries];
           source = "Supabase";
         } else {
           needsSync = true;
         }
       } catch {
-        // Table not created yet, RLS misconfigured, Supabase down — none of
-        // these should take the recipients pane down with them. Fall back to
-        // the sheet, which is the source the form writes to anyway.
+        // Table missing, RLS misconfigured, Supabase down — degrade to the
+        // sheet, which is what the form writes to anyway.
         needsSync = true;
       }
     }
 
-    if (!volunteers) {
-      volunteers = await readSheet();
+    if (!people) {
+      people = await readSheet();
       source = sourceLabel();
     }
 
@@ -48,9 +59,9 @@ export async function GET() {
     return NextResponse.json({
       source,
       needsSync,
-      volunteers: volunteers.map((v) => ({
-        ...v,
-        optedOut: optOuts.includes(v.phone),
+      volunteers: people.map((p) => ({
+        ...p,
+        optedOut: optOuts.includes(p.phone),
       })),
     });
   } catch (e) {

@@ -19,6 +19,9 @@ create table if not exists volunteers (
   -- Checkbox answers arrive as lists.
   pillars       text[] not null default '{}',
   roles         text[] not null default '{}',
+  -- Past events attended, for the loyalty programme. App-managed: sync never
+  -- writes it, so a re-sync can't wipe someone's history. See migration 003.
+  events_attended text[] not null default '{}',
   notes         text,                       -- app-managed; sync never overwrites
   source        text not null default 'form',
   first_seen_at timestamptz not null default now(),
