@@ -6,6 +6,35 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 // for it. They must stay visible under "All" — never silently dropped.
 const ANY = "__any__";
 
+const BLANK_EVENT = {
+  name: "",
+  pillar: "",
+  track: "",
+  starts_at: "",
+  venue: "",
+  capacity: "",
+  question: "",
+  status: "open",
+};
+
+const PILLARS = ["Items To Serve", "Knowledge To Serve", "Peace To Serve"];
+
+// "2026-08-09T09:00:00+00:00" -> "2026-08-09T09:00" for <input datetime-local>.
+function toLocalInput(value) {
+  return value ? String(value).slice(0, 16) : "";
+}
+
+function formatWhen(value) {
+  if (!value) return "no date set";
+  return new Date(value).toLocaleString([], {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 // Show only the last four digits. An organiser console sits on a laptop in a
 // cafe or gets screen-shared in a demo; a full roster of volunteer numbers has
 // no business being readable over someone's shoulder.
@@ -35,6 +64,17 @@ export default function Console() {
   const [roleFilter, setRoleFilter] = useState(ANY);
   const [loading, setLoading] = useState(true);
 
+  // ─── Events ────────────────────────────────────────────────────────────────
+  const [events, setEvents] = useState([]);
+  const [eventId, setEventId] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(null); // event being edited, or null
+  const [form, setForm] = useState(BLANK_EVENT);
+  const [eventError, setEventError] = useState("");
+  const [savingEvent, setSavingEvent] = useState(false);
+
+  const activeEvent = events.find((e) => e.id === eventId) || null;
+
   // ─── Load contacts ─────────────────────────────────────────────────────────
   useEffect(() => {
     fetch("/api/volunteers")
@@ -50,13 +90,88 @@ export default function Console() {
       .finally(() => setLoading(false));
   }, []);
 
+  // ─── Events ────────────────────────────────────────────────────────────────
+  const loadEvents = useCallback(
+    (selectId) =>
+      fetch("/api/events")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.error) return setEventError(d.error);
+          setEvents(d.events || []);
+          setEventId((current) => {
+            if (selectId) return selectId;
+            // Keep the current selection if it survived; otherwise pick the first.
+            if (current && d.events.some((e) => e.id === current)) return current;
+            return d.events?.[0]?.id || "";
+          });
+        })
+        .catch((e) => setEventError(e.message)),
+    []
+  );
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
+
+  async function saveEvent(e) {
+    e.preventDefault();
+    setSavingEvent(true);
+    setEventError("");
+    try {
+      const res = await fetch(
+        editing ? `/api/events/${editing.id}` : "/api/events",
+        {
+          method: editing ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
+      const data = await res.json();
+      if (data.error) return setEventError(data.error);
+      await loadEvents(data.event.id);
+      setShowForm(false);
+      setEditing(null);
+      setForm(BLANK_EVENT);
+    } catch (err) {
+      setEventError(err.message);
+    } finally {
+      setSavingEvent(false);
+    }
+  }
+
+  async function removeEvent(ev) {
+    // Registrations cascade — say so plainly rather than after the fact.
+    if (
+      !confirm(
+        `Delete "${ev.name}"? Its roster (${
+          ev.id === eventId ? roster.going.length + roster.notGoing.length : "all"
+        } responses) is deleted too. This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setEventError("");
+    try {
+      const res = await fetch(`/api/events/${ev.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.error) return setEventError(data.error);
+      await loadEvents();
+    } catch (err) {
+      setEventError(err.message);
+    }
+  }
+
   // ─── Roster, refreshed while you watch ─────────────────────────────────────
+  // Depends on the selected event — without it in the deps the interval would
+  // keep polling whichever event was selected when the page first rendered.
+  const campaign = activeEvent?.name;
   const loadRoster = useCallback(() => {
-    fetch("/api/roster")
+    if (!campaign) return;
+    fetch(`/api/roster?campaign=${encodeURIComponent(campaign)}`)
       .then((r) => r.json())
       .then((d) => !d.error && setRoster(d))
       .catch(() => {});
-  }, []);
+  }, [campaign]);
 
   useEffect(() => {
     loadRoster();
@@ -115,7 +230,7 @@ export default function Console() {
       const res = await fetch("/api/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, recipients, message }),
+        body: JSON.stringify({ mode, recipients, message, eventId }),
       });
       const data = await res.json();
       if (data.error) setError(data.error);
@@ -137,6 +252,196 @@ export default function Console() {
         <h1>Passion To Serve — Event Console</h1>
         <p>Broadcast to volunteers on WhatsApp, and watch the roster fill.</p>
       </header>
+
+      {/* ── Event: what everything below is scoped to ─────────────────── */}
+      <section className="card">
+        <div className="between" style={{ marginBottom: 10 }}>
+          <h2 style={{ margin: 0 }}>Event</h2>
+          {!showForm && (
+            <button
+              onClick={() => {
+                setEditing(null);
+                setForm(BLANK_EVENT);
+                setEventError("");
+                setShowForm(true);
+              }}
+            >
+              + New event
+            </button>
+          )}
+        </div>
+
+        {events.length === 0 && !eventError && (
+          <p className="muted">No events yet. Create one to start sending.</p>
+        )}
+
+        {events.length > 0 && (
+          <div className="row" style={{ flexWrap: "wrap" }}>
+            <select
+              value={eventId}
+              onChange={(e) => setEventId(e.target.value)}
+              aria-label="Active event"
+              style={{ minWidth: 240 }}
+            >
+              {events.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+
+            {activeEvent && !activeEvent.readOnly && (
+              <>
+                <button
+                  onClick={() => {
+                    setEditing(activeEvent);
+                    setForm({
+                      ...BLANK_EVENT,
+                      ...activeEvent,
+                      starts_at: toLocalInput(activeEvent.starts_at),
+                      capacity: activeEvent.capacity ?? "",
+                      pillar: activeEvent.pillar ?? "",
+                      track: activeEvent.track ?? "",
+                      venue: activeEvent.venue ?? "",
+                    });
+                    setEventError("");
+                    setShowForm(true);
+                  }}
+                >
+                  Edit
+                </button>
+                <button onClick={() => removeEvent(activeEvent)}>Delete</button>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeEvent && !showForm && (
+          <p className="muted" style={{ marginTop: 10, marginBottom: 0 }}>
+            {formatWhen(activeEvent.starts_at)}
+            {activeEvent.venue ? ` · ${activeEvent.venue}` : ""}
+            {activeEvent.pillar ? ` · ${activeEvent.pillar}` : ""}
+            {activeEvent.capacity ? ` · capacity ${activeEvent.capacity}` : ""}
+            <br />
+            Poll asks: “{activeEvent.question}”
+          </p>
+        )}
+
+        {activeEvent?.readOnly && (
+          <p className="muted" style={{ marginTop: 10, marginBottom: 0 }}>
+            Read-only fallback from <code>lib/config.js</code> — set{" "}
+            <code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code>{" "}
+            to manage real events.
+          </p>
+        )}
+
+        {showForm && (
+          <form onSubmit={saveEvent} style={{ marginTop: 14 }}>
+            <div className="fields">
+              <label>
+                <span className="muted">Event name *</span>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="GIFTIK Sunday drive"
+                  required
+                />
+              </label>
+
+              <label>
+                <span className="muted">Pillar</span>
+                <select
+                  value={form.pillar}
+                  onChange={(e) => setForm({ ...form, pillar: e.target.value })}
+                >
+                  <option value="">—</option>
+                  {PILLARS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span className="muted">Track</span>
+                <input
+                  type="text"
+                  value={form.track}
+                  onChange={(e) => setForm({ ...form, track: e.target.value })}
+                  placeholder="AI &amp; Coding"
+                />
+              </label>
+
+              <label>
+                <span className="muted">Starts</span>
+                <input
+                  type="datetime-local"
+                  value={form.starts_at}
+                  onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
+                />
+              </label>
+
+              <label>
+                <span className="muted">Venue</span>
+                <input
+                  type="text"
+                  value={form.venue}
+                  onChange={(e) => setForm({ ...form, venue: e.target.value })}
+                  placeholder="Kranji Recreation Centre"
+                />
+              </label>
+
+              <label>
+                <span className="muted">Capacity</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.capacity}
+                  onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+                  placeholder="25"
+                />
+              </label>
+            </div>
+
+            <label style={{ display: "block", marginTop: 12 }}>
+              <span className="muted">
+                Poll question * — this is what volunteers see on WhatsApp
+              </span>
+              <input
+                type="text"
+                value={form.question}
+                onChange={(e) => setForm({ ...form, question: e.target.value })}
+                placeholder="Join Sunday's GIFTIK distribution drive? 🙌"
+                required
+              />
+            </label>
+
+            <div className="row" style={{ marginTop: 12 }}>
+              <button className="primary" type="submit" disabled={savingEvent}>
+                {savingEvent
+                  ? "Saving…"
+                  : editing
+                    ? "Save changes"
+                    : "Create event"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditing(null);
+                  setEventError("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {eventError && <div className="err">{eventError}</div>}
+      </section>
 
       <div className="grid">
         {/* ── Left: recipients + compose ───────────────────────────────── */}
@@ -278,8 +583,8 @@ export default function Console() {
 
             {mode === "poll" ? (
               <p className="muted" style={{ margin: "0 0 14px" }}>
-                Sends a Yes/No poll — “Join Sunday&apos;s GIFTIK distribution drive? 🙌”. Votes land
-                on the roster automatically. Edit the question in <code>lib/config.js</code>.
+                Sends a Yes/No poll asking “{activeEvent?.question}”. Votes land on the
+                roster automatically. Change the wording by editing the event above.
               </p>
             ) : (
               <>
@@ -367,7 +672,9 @@ export default function Console() {
           )}
 
           <p className="muted" style={{ marginTop: 16, marginBottom: 0 }}>
-            Requires <code>npm run listen</code> in a second terminal.
+            Showing <strong>{activeEvent?.name || "—"}</strong>. Inbound replies need{" "}
+            <code>npm run listen</code> locally, or GreenAPI&apos;s webhookUrl pointed at{" "}
+            <code>/api/webhook</code> once deployed.
           </p>
         </section>
       </div>

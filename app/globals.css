@@ -71,6 +71,20 @@ select {
 }
 select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 
+/* Event form — auto-fitting columns so it stays readable on a phone. */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.fields label, form > label { display: block; }
+.fields label span, form > label span { display: block; margin-bottom: 4px; }
+input[type="number"], input[type="datetime-local"] {
+  width: 100%; padding: 10px 12px; font: inherit;
+  border: 1px solid var(--line); border-radius: 8px; background: #fff; color: inherit;
+}
+.fields select { width: 100%; }
+
 .tag {
   font-size: 11px; padding: 1px 6px; border-radius: 999px;
   background: #f2f4f7; color: var(--muted); border: 1px solid var(--line);
