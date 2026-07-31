@@ -63,6 +63,9 @@ export default function Console() {
   const [pillarFilter, setPillarFilter] = useState(ANY);
   const [roleFilter, setRoleFilter] = useState(ANY);
   const [loading, setLoading] = useState(true);
+  const [needsSync, setNeedsSync] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
 
   // ─── Events ────────────────────────────────────────────────────────────────
   const [events, setEvents] = useState([]);
@@ -76,19 +79,74 @@ export default function Console() {
   const activeEvent = events.find((e) => e.id === eventId) || null;
 
   // ─── Load contacts ─────────────────────────────────────────────────────────
+  const loadVolunteers = useCallback(
+    () =>
+      fetch("/api/volunteers")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.error) return setError(d.error);
+          setVolunteers(d.volunteers);
+          setSource(d.source);
+          setNeedsSync(Boolean(d.needsSync));
+          // Pre-select everyone who hasn't opted out.
+          setSelected(
+            new Set(d.volunteers.filter((v) => !v.optedOut).map((v) => v.phone))
+          );
+        })
+        .catch((e) => setError(e.message))
+        .finally(() => setLoading(false)),
+    []
+  );
+
   useEffect(() => {
-    fetch("/api/volunteers")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) return setError(d.error);
-        setVolunteers(d.volunteers);
-        setSource(d.source);
-        // Pre-select everyone who hasn't opted out.
-        setSelected(new Set(d.volunteers.filter((v) => !v.optedOut).map((v) => v.phone)));
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+    loadVolunteers();
+  }, [loadVolunteers]);
+
+  async function markAttended(entry, attended) {
+    // Optimistic: the tick should respond instantly on a phone at a venue,
+    // not after a round trip. loadRoster() reconciles on the next poll.
+    setRoster((prev) => ({
+      ...prev,
+      going: prev.going.map((r) =>
+        r.phone === entry.phone ? { ...r, attended } : r
+      ),
+      notGoing: prev.notGoing.map((r) =>
+        r.phone === entry.phone ? { ...r, attended } : r
+      ),
+    }));
+    try {
+      await fetch("/api/attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: entry.phone,
+          campaign: entry.campaign,
+          attended,
+        }),
+      });
+    } catch {
+      // Next poll will show the true state.
+    } finally {
+      loadRoster();
+    }
+  }
+
+  async function syncVolunteers() {
+    setSyncing(true);
+    setError("");
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/volunteers/sync", { method: "POST" });
+      const d = await res.json();
+      if (d.error) return setError(d.error);
+      setSyncResult(d);
+      await loadVolunteers();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   // ─── Events ────────────────────────────────────────────────────────────────
   const loadEvents = useCallback(
@@ -449,8 +507,32 @@ export default function Console() {
           <section className="card">
             <div className="between" style={{ marginBottom: 10 }}>
               <h2 style={{ margin: 0 }}>Recipients</h2>
-              <span className="muted">{source}</span>
+              <span className="row">
+                <span className="muted">{source}</span>
+                <button onClick={syncVolunteers} disabled={syncing}>
+                  {syncing ? "Syncing…" : "Sync from form"}
+                </button>
+              </span>
             </div>
+
+            {/* Reading the sheet directly means Google's CDN can lag several
+                minutes behind a new signup — say so rather than let it look
+                like a bug. */}
+            {needsSync && (
+              <div className="ok" style={{ marginTop: 0, marginBottom: 10 }}>
+                Reading the Google Sheet directly, which can lag a few minutes
+                behind new signups. Sync to load them into the database.
+              </div>
+            )}
+
+            {syncResult && (
+              <div className="ok" style={{ marginTop: 0, marginBottom: 10 }}>
+                Synced — {syncResult.added} added · {syncResult.updated} updated ·{" "}
+                {syncResult.unchanged} unchanged
+                {syncResult.skipped > 0 &&
+                  ` · ${syncResult.skipped} skipped (no usable phone)`}
+              </div>
+            )}
 
             {loading && <p className="muted">Loading contacts…</p>}
 
@@ -545,11 +627,28 @@ export default function Console() {
                         />
                         <span className="nm">
                           {v.name || "—"}
-                          {(v.pillars?.length > 0 || v.roles?.length > 0) && (
+                          {(v.pillars?.length > 0 ||
+                            v.roles?.length > 0 ||
+                            v.attended?.length > 0) && (
                             <span className="sub">
                               {[...(v.pillars || []), ...(v.roles || [])]
                                 .filter(Boolean)
                                 .join(" · ")}
+                              {v.attended?.length > 0 && (
+                                <>
+                                  {(v.pillars?.length || v.roles?.length) ? " · " : ""}
+                                  {/* A returning volunteer is the one you most
+                                      want to re-invite when headcount is short. */}
+                                  <span
+                                    className="hist"
+                                    title={v.attended
+                                      .map((a) => a.event)
+                                      .join("\n")}
+                                  >
+                                    {v.attended.length} attended
+                                  </span>
+                                </>
+                              )}
                             </span>
                           )}
                         </span>
@@ -663,6 +762,17 @@ export default function Console() {
                     {displayName(r)}
                     <div className="muted">{r.raw}</div>
                   </span>
+                  {/* Only people who said yes can turn up. */}
+                  {r.answer === "yes" && (
+                    <label className="attend" title="Mark as attended">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(r.attended)}
+                        onChange={(e) => markAttended(r, e.target.checked)}
+                      />
+                      <span className="muted">here</span>
+                    </label>
+                  )}
                   <span className="when">
                     {new Date(r.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
