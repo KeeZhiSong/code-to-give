@@ -81,7 +81,7 @@ export default function Console() {
 
   const roleOptions = useMemo(() => {
     const set = new Set();
-    volunteers.forEach((v) => v.preferredRole && set.add(v.preferredRole));
+    volunteers.forEach((v) => (v.roles || []).forEach((r) => set.add(r)));
     return [...set].sort();
   }, [volunteers]);
 
@@ -90,7 +90,7 @@ export default function Console() {
       volunteers.filter(
         (v) =>
           (pillarFilter === ANY || (v.pillars || []).includes(pillarFilter)) &&
-          (roleFilter === ANY || v.preferredRole === roleFilter)
+          (roleFilter === ANY || (v.roles || []).includes(roleFilter))
       ),
     [volunteers, pillarFilter, roleFilter]
   );
@@ -240,9 +240,9 @@ export default function Console() {
                         />
                         <span className="nm">
                           {v.name || "—"}
-                          {(v.pillars?.length > 0 || v.preferredRole) && (
+                          {(v.pillars?.length > 0 || v.roles?.length > 0) && (
                             <span className="sub">
-                              {[...(v.pillars || []), v.preferredRole]
+                              {[...(v.pillars || []), ...(v.roles || [])]
                                 .filter(Boolean)
                                 .join(" · ")}
                             </span>
