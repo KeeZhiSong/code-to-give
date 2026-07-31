@@ -1,0 +1,19 @@
+{
+  "name": "passion-to-serve-console",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "listen": "node scripts/listen.js",
+    "doctor": "node whatsapp-rsvp.js doctor"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.111.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

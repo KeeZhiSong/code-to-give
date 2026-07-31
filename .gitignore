@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env.local
+.env*.local
+
+# Personal, per-machine Claude Code settings (the ".local" variant).
+.claude/settings.local.json
+
+# Local response store — regenerated at runtime, and contains volunteer phone numbers.
+data/responses.json
+data/optouts.json
+webhooks.jsonl
