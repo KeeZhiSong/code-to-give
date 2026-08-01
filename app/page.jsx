@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import ReadinessScore from "../components/ReadinessScore.jsx";
+import HeadcountDashboard from "../components/HeadcountDashboard.jsx";
+import LogisticsPartners from "../components/LogisticsPartners.jsx";
+import TaskBoard from "../components/TaskBoard.jsx";
 
 // Volunteers who signed up before a form question existed have a blank value
 // for it. They must stay visible under "All" — never silently dropped.
@@ -67,6 +71,7 @@ export default function Console() {
   const [needsSync, setNeedsSync] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
+  const [markingAttended, setMarkingAttended] = useState(() => new Set());
 
   // ─── Events ────────────────────────────────────────────────────────────────
   const [events, setEvents] = useState([]);
@@ -76,6 +81,7 @@ export default function Console() {
   const [form, setForm] = useState(BLANK_EVENT);
   const [eventError, setEventError] = useState("");
   const [savingEvent, setSavingEvent] = useState(false);
+  const [dashboardTab, setDashboardTab] = useState("console");
 
   const activeEvent = events.find((e) => e.id === eventId) || null;
 
@@ -236,6 +242,17 @@ export default function Console() {
     return [...set].sort();
   }, [volunteers]);
 
+  // Keyed by phone so the roster can look up "has this person attended
+  // before, and have they attended *this* event already" without a second
+  // fetch. Beneficiaries don't carry eventsAttended — that naturally excludes
+  // them from the attendance control below, since the loyalty ledger is a
+  // volunteer concept.
+  const volunteerByPhone = useMemo(() => {
+    const map = new Map();
+    volunteers.forEach((v) => map.set(v.phone, v));
+    return map;
+  }, [volunteers]);
+
   const visible = useMemo(
     () =>
       volunteers.filter(
@@ -283,11 +300,53 @@ export default function Console() {
   const answered = new Set([...roster.going, ...roster.notGoing].map((r) => r.phone));
   const awaiting = chosen.filter((v) => !answered.has(v.phone)).length;
 
+  // Readiness's "re-invite these N past volunteers" suggestion hands off here:
+  // select exactly those people, clear any filter hiding them, switch to the
+  // RSVP poll (already wired to this event's question and roster), and let
+  // the organiser review before sending — nothing goes out automatically.
+  function reinvite(recipients) {
+    setSelected(new Set(recipients.map((r) => r.phone)));
+    setTypeFilter(ANY);
+    setPillarFilter(ANY);
+    setRoleFilter(ANY);
+    setMode("poll");
+    document.getElementById("compose-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function markAttended(phone) {
+    if (!activeEvent || markingAttended.has(phone)) return;
+    setMarkingAttended((prev) => new Set(prev).add(phone));
+    try {
+      const res = await fetch(`/api/volunteers/${encodeURIComponent(phone)}/attended`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventName: activeEvent.name }),
+      });
+      const data = await res.json();
+      if (data.error) return setError(data.error);
+      setVolunteers((prev) =>
+        prev.map((v) => (v.phone === phone ? { ...v, eventsAttended: data.eventsAttended } : v))
+      );
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setMarkingAttended((prev) => {
+        const next = new Set(prev);
+        next.delete(phone);
+        return next;
+      });
+    }
+  }
+
   return (
     <div className="wrap">
       <header className="top">
-        <h1>Passion To Serve — Event Console</h1>
-        <p>Broadcast to volunteers on WhatsApp, and watch the roster fill.</p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="logo" src="/logo.png" alt="Passion To Serve" />
+        <div>
+          <h1>Passion To Serve — Event Console</h1>
+          <p>Broadcast to volunteers on WhatsApp, and watch the roster fill.</p>
+        </div>
       </header>
 
       {/* ── Event: what everything below is scoped to ─────────────────── */}
@@ -480,6 +539,35 @@ export default function Console() {
         {eventError && <div className="err">{eventError}</div>}
       </section>
 
+      {activeEvent && !activeEvent.readOnly && (
+        <>
+          <div className="seg" style={{ marginBottom: 16 }}>
+            <button
+              className={dashboardTab === "console" ? "on" : ""}
+              onClick={() => setDashboardTab("console")}
+            >
+              Console
+            </button>
+            <button
+              className={dashboardTab === "recommendations" ? "on" : ""}
+              onClick={() => setDashboardTab("recommendations")}
+            >
+              Recommendations
+            </button>
+          </div>
+
+          {dashboardTab === "recommendations" ? (
+            <ReadinessScore eventId={activeEvent.id} onReinvite={reinvite} />
+          ) : (
+            <>
+              <HeadcountDashboard eventId={activeEvent.id} />
+              <LogisticsPartners eventId={activeEvent.id} />
+              <TaskBoard eventId={activeEvent.id} />
+            </>
+          )}
+        </>
+      )}
+
       <div className="grid">
         {/* ── Left: recipients + compose ───────────────────────────────── */}
         <div>
@@ -650,7 +738,7 @@ export default function Console() {
             )}
           </section>
 
-          <section className="card">
+          <section className="card" id="compose-section">
             <h2>Compose</h2>
 
             <div className="seg" style={{ marginBottom: 14 }}>
@@ -737,18 +825,40 @@ export default function Console() {
             </p>
           ) : (
             <div>
-              {[...roster.going, ...roster.notGoing].map((r) => (
-                <div key={r.phone + r.answer} className={`rosterline ${r.answer}`}>
-                  <span className="dot" />
-                  <span className="who">
-                    {displayName(r)}
-                    <div className="muted">{r.raw}</div>
-                  </span>
-                  <span className="when">
-                    {new Date(r.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </div>
-              ))}
+              {[...roster.going, ...roster.notGoing].map((r) => {
+                const vol = volunteerByPhone.get(r.phone);
+                // The loyalty ledger only makes sense for confirmed volunteers
+                // (not "can't make it", not beneficiaries — they have no
+                // eventsAttended field at all).
+                const canMarkAttendance =
+                  r.answer === "yes" && Array.isArray(vol?.eventsAttended) && activeEvent;
+                const alreadyAttended =
+                  canMarkAttendance && vol.eventsAttended.includes(activeEvent.name);
+
+                return (
+                  <div key={r.phone + r.answer} className={`rosterline ${r.answer}`}>
+                    <span className="dot" />
+                    <span className="who">
+                      {displayName(r)}
+                      <div className="muted">{r.raw}</div>
+                    </span>
+                    <span className="when">
+                      {new Date(r.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    {canMarkAttendance &&
+                      (alreadyAttended ? (
+                        <span className="tag">attended</span>
+                      ) : (
+                        <button
+                          onClick={() => markAttended(r.phone)}
+                          disabled={markingAttended.has(r.phone)}
+                        >
+                          {markingAttended.has(r.phone) ? "Marking…" : "Mark attended"}
+                        </button>
+                      ))}
+                  </div>
+                );
+              })}
             </div>
           )}
 
