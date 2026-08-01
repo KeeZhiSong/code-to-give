@@ -390,9 +390,9 @@ export default function EventDispatchBoard() {
     setActiveEventId(newEvent.id);
     setView("detail");
 
-    // Also create it for real, so the clone appears on the events index and in
-    // the explorer with its checklist already on the task board — a template
-    // that only produces a local card isn't duplication, it's a note to self.
+    // Also create it for real, so the clone appears on the events index with
+    // its checklist already on the task board — a template that only produces
+    // a local card isn't duplication, it's a note to self.
     setCloneStatus({ state: "saving", message: "Creating event…" });
     try {
       const res = await fetch("/api/events/from-template", {
