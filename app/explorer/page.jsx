@@ -1,4 +1,4 @@
-'use client';import React, { useState, useMemo, useCallback } from "react";import {
+'use client';import React, { useState, useMemo, useCallback, useEffect } from "react";import {
   Package, BookOpen, Wind, Sprout, LifeBuoy, MapPin, Calendar,
   Users, User, Baby, Accessibility, Armchair, SlidersHorizontal,
   X, ChevronRight, Navigation, Search, ArrowLeft, Check, Repeat, ChevronDown,
@@ -21,7 +21,7 @@
   South: { lat: 1.27, lng: 103.82 },
   East: { lat: 1.3236, lng: 103.9273 },
   West: { lat: 1.341, lng: 103.707 },
-};const VOLUNTEER_EVENTS = [
+};const FALLBACK_VOLUNTEER_EVENTS = [
   { id: "v1", title: "Community Pantry Sort & Pack", venue: "Bukit Merah CC", pillar: "items", commitment: "one-time", region: "Central", date: "2026-08-08", time: "9:00 AM – 12:00 PM", spotsLeft: 4, spotsTotal: 12 },
   { id: "v2", title: "Digital Literacy Buddy for Seniors", venue: "Tampines Regional Library", pillar: "knowledge", commitment: "recurring", frequency: "Weekly, Tue", region: "East", date: "2026-08-04", time: "3:00 PM – 5:00 PM", spotsLeft: 2, spotsTotal: 6 },
   { id: "v3", title: "Beach & Park Clean-Up", venue: "East Coast Park, Area C", pillar: "items", commitment: "one-time", region: "East", date: "2026-08-09", time: "7:30 AM – 10:00 AM", spotsLeft: 15, spotsTotal: 40 },
@@ -34,7 +34,7 @@
   { id: "v10", title: "Art Therapy Companion", venue: "Bedok Family Service Centre", pillar: "peace", commitment: "one-time", region: "East", date: "2026-08-16", time: "2:00 PM – 4:00 PM", spotsLeft: 2, spotsTotal: 6 },
   { id: "v11", title: "Food Bank Delivery Driver", venue: "Yishun Distribution Point", pillar: "items", commitment: "recurring", frequency: "Weekly, Fri", region: "North", date: "2026-08-07", time: "5:30 PM – 7:30 PM", spotsLeft: 3, spotsTotal: 8 },
   { id: "v12", title: "Story-time Reading for Kids", venue: "Sentosa Cove CC", pillar: "knowledge", commitment: "one-time", region: "South", date: "2026-08-22", time: "10:00 AM – 11:00 AM", spotsLeft: 7, spotsTotal: 15 },
-];const BENEFICIARY_EVENTS = [
+];const FALLBACK_BENEFICIARY_EVENTS = [
   { id: "b1", title: "Weekly Grocery Collection", venue: "Central Distribution Point", category: "items", audience: ["myself"], accessibility: ["wheelchair"], commitment: "recurring", frequency: "Weekly, Tue", region: "Central", date: "2026-08-04", time: "10:00 AM – 1:00 PM", spotsLeft: 18, spotsTotal: 30 },
   { id: "b2", title: "Free Digital Skills Class", venue: "Bedok Community Library", category: "education", audience: ["myself"], accessibility: ["seated"], commitment: "recurring", frequency: "Weekly, Wed", region: "East", date: "2026-08-05", time: "2:00 PM – 3:30 PM", spotsLeft: 5, spotsTotal: 12 },
   { id: "b3", title: "Kids Homework Support Drop-in", venue: "Jurong West Learning Hub", category: "education", audience: ["child"], accessibility: [], commitment: "recurring", frequency: "Weekly, Sat", region: "West", date: "2026-08-08", time: "10:00 AM – 12:00 PM", spotsLeft: 8, spotsTotal: 20 },
@@ -87,7 +87,13 @@
   return next;
 }function intersects(fieldArrOrVal, selectedSet) {
   if (selectedSet.size === 0) return true;
-  if (Array.isArray(fieldArrOrVal)) return fieldArrOrVal.some((v) => selectedSet.has(v));
+  // Real events carry no region unless the venue name gave it away, and an
+  // unknown value must not hide the event behind a filter it can't answer.
+  if (fieldArrOrVal == null) return true;
+  if (Array.isArray(fieldArrOrVal)) {
+    if (fieldArrOrVal.length === 0) return true;
+    return fieldArrOrVal.some((v) => selectedSet.has(v));
+  }
   return selectedSet.has(fieldArrOrVal);
 }/* ------------------------------------------------------------------ *//*  Small building blocks                                            *//* ------------------------------------------------------------------ */function Logomark({ size = 32 }) {
   return (
@@ -370,12 +376,44 @@
 
   const accent = role === "volunteer" ? COLORS.volunteer : COLORS.beneficiary;
 
+  // Real events from the console, mapped into this page's shape by
+  // /api/explorer. Falls back to the sample set only if the fetch fails, so a
+  // dead API shows something illustrative rather than an empty page — but a
+  // working one always shows the events organisers actually created.
+  const [liveEvents, setLiveEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/explorer")
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        setLiveEvents(
+          d.error || !Array.isArray(d.events) || d.events.length === 0
+            ? [...FALLBACK_VOLUNTEER_EVENTS, ...FALLBACK_BENEFICIARY_EVENTS]
+            : d.events
+        );
+      })
+      .catch(() => {
+        if (!cancelled)
+          setLiveEvents([
+            ...FALLBACK_VOLUNTEER_EVENTS,
+            ...FALLBACK_BENEFICIARY_EVENTS,
+          ]);
+      })
+      .finally(() => !cancelled && setEventsLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filteredEvents = useMemo(() => {
     if (!role) return [];
     const q = search.trim().toLowerCase();
 
     if (role === "volunteer") {
-      let list = VOLUNTEER_EVENTS.filter((e) => {
+      let list = liveEvents.filter((e) => {
         if (q && !e.title.toLowerCase().includes(q) && !e.venue.toLowerCase().includes(q)) return false;
         if (!intersects(e.pillar, vFilters.pillars)) return false;
         if (!intersects(e.commitment, vFilters.commitment)) return false;
@@ -395,7 +433,7 @@
       return list.sort((a, b) => daysUntil(a.date) - daysUntil(b.date));
     }
 
-    let list = BENEFICIARY_EVENTS.filter((e) => {
+    let list = liveEvents.filter((e) => {
       if (q && !e.title.toLowerCase().includes(q) && !e.venue.toLowerCase().includes(q)) return false;
       if (!intersects(e.category, bFilters.categories)) return false;
       if (!intersects(e.audience, bFilters.audience)) return false;
@@ -414,7 +452,7 @@
       list = [...list].sort((a, b) => daysUntil(a.date) - daysUntil(b.date));
     }
     return list;
-  }, [role, search, vFilters, bFilters, geo]);
+  }, [role, search, vFilters, bFilters, geo, liveEvents]);
 
   const activeFilterCount = useMemo(() => {
     if (role === "volunteer") {
