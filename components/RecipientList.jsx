@@ -22,6 +22,7 @@ export default function RecipientList({
   onToggle,
   onSelectAll,
   onRejoin,
+  onBackupToggle,
 }) {
   const { options, visible } = filters;
   const selectable = visible.filter((p) => !p.optedOut);
@@ -88,7 +89,8 @@ export default function RecipientList({
 
       {!loading && people.length === 0 && (
         <p className="muted">
-          No signups yet. Responses appear here as people submit the Google Form.
+          No signups yet. Responses appear here as people submit the Google
+          Form.
         </p>
       )}
 
@@ -240,12 +242,34 @@ export default function RecipientList({
                     {/* A returning volunteer is who you re-invite when
                         headcount is short — worth seeing at a glance. */}
                     {p.loyaltyPoints > 0 && (
-                      <span className="tag pts" title={`${p.loyaltyPoints} loyalty points`}>
+                      <span
+                        className="tag pts"
+                        title={`${p.loyaltyPoints} loyalty points`}
+                      >
                         {p.loyaltyTier ? `${p.loyaltyTier} · ` : ""}
                         {p.loyaltyPoints} pts
                       </span>
                     )}
                     {p.vipStatus && <span className="tag">VIP</span>}
+                    {/* Standby volunteers the backup-alert cron can message
+                        when a confirmed headcount falls short close to an
+                        event — organiser-toggled, not self-declared. */}
+                    {onBackupToggle && !p.optedOut && (
+                      <label
+                        className="row"
+                        style={{ cursor: "pointer" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={Boolean(p.isBackup)}
+                          onChange={(e) =>
+                            onBackupToggle(p.phone, e.target.checked)
+                          }
+                        />
+                        <span className="muted">Backup</span>
+                      </label>
+                    )}
                     {p.optedOut && (
                       <>
                         <span className="tag">opted out</span>
@@ -290,8 +314,8 @@ export default function RecipientList({
 
           {hiddenSelected > 0 && (
             <p className="muted" style={{ marginTop: 6 }}>
-              {hiddenSelected} more selected outside this filter — they won&apos;t
-              be sent to.
+              {hiddenSelected} more selected outside this filter — they
+              won&apos;t be sent to.
             </p>
           )}
         </>
