@@ -3,8 +3,13 @@ node_modules/
 .env.local
 .env*.local
 
-# Personal, per-machine Claude Code settings (the ".local" variant).
-.claude/settings.local.json
+# Claude Code project settings/state — local tooling, not for the repo.
+.claude/
+
+# Reference PDFs dropped in the workspace root for AI context only —
+# not deliverables. (docs/ versions of the same names are the real ones.)
+/Hackathon Brainstorming_ Passion to Serve.pdf
+/Passion To Serve - Introduction v6.0 Morgan Stanley Hackathon 30 July 2026.pdf
 
 # Local response store — regenerated at runtime, and contains volunteer phone numbers.
 data/responses.json

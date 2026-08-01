@@ -13,6 +13,7 @@ const BLANK_EVENT = {
   starts_at: "",
   venue: "",
   capacity: "",
+  points_value: 1,
   question: "",
   status: "open",
 };
@@ -340,6 +341,7 @@ export default function Console() {
                       pillar: activeEvent.pillar ?? "",
                       track: activeEvent.track ?? "",
                       venue: activeEvent.venue ?? "",
+                      points_value: activeEvent.points_value ?? 1,
                     });
                     setEventError("");
                     setShowForm(true);
@@ -359,6 +361,7 @@ export default function Console() {
             {activeEvent.venue ? ` · ${activeEvent.venue}` : ""}
             {activeEvent.pillar ? ` · ${activeEvent.pillar}` : ""}
             {activeEvent.capacity ? ` · capacity ${activeEvent.capacity}` : ""}
+            {` · ${activeEvent.points_value ?? 1} pt${(activeEvent.points_value ?? 1) === 1 ? "" : "s"}`}
             <br />
             Poll asks: “{activeEvent.question}”
           </p>
@@ -438,6 +441,17 @@ export default function Console() {
                   value={form.capacity}
                   onChange={(e) => setForm({ ...form, capacity: e.target.value })}
                   placeholder="25"
+                />
+              </label>
+
+              <label>
+                <span className="muted">Points value</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={form.points_value}
+                  onChange={(e) => setForm({ ...form, points_value: e.target.value })}
+                  placeholder="1"
                 />
               </label>
             </div>
@@ -635,6 +649,16 @@ export default function Console() {
                           )}
                         </span>
                         {v.optedOut && <span className="tag">opted out</span>}
+                        {v.vipStatus && (
+                          <span className="tag" title="VIP Pass — priority GIFTIK access">
+                            ⭐ VIP
+                          </span>
+                        )}
+                        {v.loyaltyPoints > 0 && (
+                          <span className="tag" title="Loyalty points earned">
+                            {v.loyaltyPoints} pts
+                          </span>
+                        )}
                         <span className="ph">{maskPhone(v.phone)}</span>
                       </label>
                     ))}
