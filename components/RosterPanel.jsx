@@ -18,6 +18,11 @@ export default function RosterPanel({
 }) {
   const [marking, setMarking] = useState(() => new Set());
   const [error, setError] = useState("");
+  // Who's mid-send, and who's already been thanked this session. The latter is
+  // only remembered in the page — it stops a double-tap sending twice, but a
+  // refresh forgets, because nothing records it server-side.
+  const [thanking, setThanking] = useState(() => new Set());
+  const [thanked, setThanked] = useState(() => new Set());
 
   async function markAttended(phone) {
     if (!event || marking.has(phone)) return;
@@ -42,6 +47,39 @@ export default function RosterPanel({
       setError(e.message);
     } finally {
       setMarking((prev) => {
+        const next = new Set(prev);
+        next.delete(phone);
+        return next;
+      });
+    }
+  }
+
+  /**
+   * Send the post-event thank-you — what their hours actually amounted to.
+   *
+   * Separate from marking attendance on purpose. Attendance is a record and
+   * can be corrected; this is a message that has left the building and can't.
+   */
+  async function sendThanks(phone, name) {
+    if (!event || thanking.has(phone)) return;
+    if (thanked.has(phone) && !confirm(`Send ${name || "them"} another thank-you?`)) {
+      return;
+    }
+    setThanking((prev) => new Set(prev).add(phone));
+    setError("");
+    try {
+      const res = await fetch(`/api/events/${event.id}/impact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, name }),
+      });
+      const data = await res.json();
+      if (data.error) return setError(data.error);
+      setThanked((prev) => new Set(prev).add(phone));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setThanking((prev) => {
         const next = new Set(prev);
         next.delete(phone);
         return next;
@@ -114,6 +152,22 @@ export default function RosterPanel({
                       {marking.has(r.phone) ? "Marking…" : "Mark attended"}
                     </button>
                   ))}
+                {/* Sits alongside "Mark attended" rather than replacing it —
+                    thanking someone and recording that they came are two
+                    different decisions, and an organiser may want either. */}
+                {canMark && (
+                  <button
+                    onClick={() => sendThanks(r.phone, person.name)}
+                    disabled={thanking.has(r.phone)}
+                    title="Send the post-event thank-you"
+                  >
+                    {thanking.has(r.phone)
+                      ? "Sending…"
+                      : thanked.has(r.phone)
+                        ? "Thanks sent ✓"
+                        : "Send thanks"}
+                  </button>
+                )}
               </div>
             );
           })}
