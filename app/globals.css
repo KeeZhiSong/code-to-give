@@ -226,3 +226,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Inline row action — small enough not to compete with the name beside it. */
 button.tiny { padding: 2px 8px; font-size: 11px; font-weight: 500; }
+
+/* Beneficiary row — a card-within-a-card, since each carries more than a
+   name: languages, courses, attendance history and notes. */
+.benef { padding: 12px 0; border-top: 1px solid var(--line); }
+.benef:first-of-type { border-top: 0; }
+.benef .nm { display: flex; flex-direction: column; gap: 3px; }
+.benef .nm .tag { align-self: flex-start; margin-top: 2px; }
