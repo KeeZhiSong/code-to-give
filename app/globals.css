@@ -125,6 +125,50 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .rosterline .when { color: var(--muted); font-size: 12px; }
 .rosterline button { flex: none; padding: 4px 10px; font-size: 12px; }
 
+/* ─── App shell ──────────────────────────────────────────────────────────── */
+.shell { display: flex; min-height: 100vh; align-items: stretch; }
+.shell-main { flex: 1; min-width: 0; } /* min-width:0 so wide tables can scroll */
+
+.sidebar {
+  width: 208px; flex: none; padding: 20px 12px;
+  background: var(--card); border-right: 1px solid var(--line);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sb-brand {
+  display: flex; align-items: center; gap: 9px; padding: 0 8px 18px;
+  text-decoration: none; color: var(--ink); font-weight: 650; font-size: 14px;
+}
+.sb-nav { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.sb-nav a {
+  display: block; padding: 9px 10px; border-radius: 8px;
+  text-decoration: none; color: var(--ink);
+}
+.sb-nav a:hover { background: #f2f4f7; }
+.sb-nav a.on { background: var(--accent); color: var(--accent-ink); }
+.sb-label { display: block; font-weight: 550; font-size: 14px; }
+.sb-hint { display: block; font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.sb-nav a.on .sb-hint { color: var(--accent-ink); opacity: 0.75; }
+
+/* On a phone the sidebar becomes a scrollable strip along the top — an
+   organiser checking the roster at a venue is on a handset. */
+@media (max-width: 760px) {
+  .shell { flex-direction: column; }
+  .sidebar {
+    width: auto; height: auto; position: static;
+    border-right: 0; border-bottom: 1px solid var(--line); padding: 12px;
+  }
+  .sb-brand { padding-bottom: 10px; }
+  .sb-nav { grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; gap: 4px; }
+  .sb-hint { display: none; }
+}
+
+/* Back link above a page title — "where am I, and how do I get out". */
+.backlink {
+  display: inline-block; margin-bottom: 10px; font-size: 13px;
+  color: var(--muted); text-decoration: none;
+}
+.backlink:hover { color: var(--accent); }
+
 /* ─── Navigation ─────────────────────────────────────────────────────────── */
 .tabs {
   display: flex; gap: 2px; margin-bottom: 20px;

@@ -1,14 +1,11 @@
-import Link from "next/link";
-
-/** Shared masthead. Links back to the events index from anywhere. */
+/**
+ * Page masthead. Branding lives in the sidebar, so this is just the title,
+ * a subtitle, and room for page-level actions on the right.
+ */
 export default function AppHeader({ title, subtitle, children }) {
   return (
     <header className="top">
-      <Link href="/" aria-label="All events">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="logo" src="/logo.png" alt="Passion To Serve" />
-      </Link>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <h1>{title}</h1>
         {subtitle && <p>{subtitle}</p>}
       </div>
