@@ -42,7 +42,6 @@ export default function EventsIndex() {
 
   return (
     <div className="wrap">
-      {/* Explorer lives in the sidebar now — no need to repeat it here. */}
       <AppHeader
         title="Events"
         subtitle="Coordinate volunteer-led events, end to end."
