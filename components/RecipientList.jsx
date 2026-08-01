@@ -251,6 +251,12 @@ export default function RecipientList({
                       </span>
                     )}
                     {p.vipStatus && <span className="tag">VIP</span>}
+                    {/* Whether this is their first event — the signal for
+                        skipping a repeat welcome/intro message in Compose. */}
+                    {Array.isArray(p.eventsAttended) &&
+                      p.eventsAttended.length === 0 && (
+                        <span className="tag">New</span>
+                      )}
                     {/* Standby volunteers the backup-alert cron can message
                         when a confirmed headcount falls short close to an
                         event — organiser-toggled, not self-declared. */}
