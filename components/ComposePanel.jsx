@@ -14,9 +14,21 @@ const DEFAULT_TEXT =
 export default function ComposePanel({ event, recipients, onSent }) {
   const [mode, setMode] = useState("poll");
   const [message, setMessage] = useState(DEFAULT_TEXT);
+  const [includeDetails, setIncludeDetails] = useState(true);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+
+  // Only worth offering if the event actually has something to say.
+  const hasDetails = Boolean(
+    event &&
+      (event.starts_at ||
+        event.venue ||
+        event.meeting_point ||
+        event.what_to_bring ||
+        event.dress_code ||
+        event.description)
+  );
 
   async function send() {
     setSending(true);
@@ -31,6 +43,7 @@ export default function ComposePanel({ event, recipients, onSent }) {
           recipients,
           message,
           eventId: event?.id,
+          includeDetails: includeDetails && hasDetails,
         }),
       });
       const data = await res.json();
@@ -64,10 +77,31 @@ export default function ComposePanel({ event, recipients, onSent }) {
       </div>
 
       {mode === "poll" ? (
-        <p className="muted" style={{ margin: "0 0 14px" }}>
-          Sends a Yes/No poll asking “{event?.question}”. Votes land on the
-          roster automatically. Change the wording by editing the event.
-        </p>
+        <>
+          <p className="muted" style={{ margin: "0 0 10px" }}>
+            Sends a Yes/No poll asking “{event?.question}”. Votes land on the
+            roster automatically. Change the wording by editing the event.
+          </p>
+
+          {hasDetails ? (
+            <label className="row" style={{ cursor: "pointer", marginBottom: 14 }}>
+              <input
+                type="checkbox"
+                checked={includeDetails}
+                onChange={(e) => setIncludeDetails(e.target.checked)}
+              />
+              <span className="muted">
+                Send event details first — date, venue, what to bring.{" "}
+                <strong>Doubles the messages sent.</strong>
+              </span>
+            </label>
+          ) : (
+            <p className="muted" style={{ margin: "0 0 14px" }}>
+              No event details to send yet — add a venue, time or what to bring
+              in Settings and they&apos;ll go out with the invite.
+            </p>
+          )}
+        </>
       ) : (
         <>
           <textarea

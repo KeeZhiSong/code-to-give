@@ -62,6 +62,15 @@ export default function EventForm({
         </label>
 
         <label>
+          <span className="muted">Ends</span>
+          <input
+            type="datetime-local"
+            value={form.ends_at}
+            onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
+          />
+        </label>
+
+        <label>
           <span className="muted">Venue</span>
           <input
             type="text"
@@ -94,6 +103,50 @@ export default function EventForm({
         </label>
       </div>
 
+      <div className="fields" style={{ marginTop: 12 }}>
+        <label>
+          <span className="muted">Meeting point</span>
+          <input
+            type="text"
+            value={form.meeting_point}
+            onChange={(e) => setForm({ ...form, meeting_point: e.target.value })}
+            placeholder="by the main gate"
+          />
+        </label>
+
+        <label>
+          <span className="muted">Dress code</span>
+          <input
+            type="text"
+            value={form.dress_code}
+            onChange={(e) => setForm({ ...form, dress_code: e.target.value })}
+            placeholder="Comfortable clothes, covered shoes"
+          />
+        </label>
+
+        <label>
+          <span className="muted">What to bring</span>
+          <input
+            type="text"
+            value={form.what_to_bring}
+            onChange={(e) => setForm({ ...form, what_to_bring: e.target.value })}
+            placeholder="A water bottle and a cap"
+          />
+        </label>
+      </div>
+
+      <label style={{ display: "block", marginTop: 12 }}>
+        <span className="muted">
+          What this event is — one or two sentences, sent with the invite
+        </span>
+        <textarea
+          rows={2}
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          placeholder="Sorting and distributing donated items to migrant workers."
+        />
+      </label>
+
       <label style={{ display: "block", marginTop: 12 }}>
         <span className="muted">
           Poll question * — this is what volunteers see on WhatsApp
@@ -106,6 +159,31 @@ export default function EventForm({
           required
         />
       </label>
+
+      {/* The automatic reply after someone votes. Left blank, the default
+          wording in lib/eventMessage.js is used — which already names the
+          event and repeats the time, venue and what to bring. */}
+      <div className="fields" style={{ marginTop: 12 }}>
+        <label>
+          <span className="muted">Reply when they say yes</span>
+          <input
+            type="text"
+            value={form.confirm_yes}
+            onChange={(e) => setForm({ ...form, confirm_yes: e.target.value })}
+            placeholder="You're on the list for …  (leave blank for the default)"
+          />
+        </label>
+
+        <label>
+          <span className="muted">Reply when they can&apos;t make it</span>
+          <input
+            type="text"
+            value={form.confirm_no}
+            onChange={(e) => setForm({ ...form, confirm_no: e.target.value })}
+            placeholder="No worries … (leave blank for the default)"
+          />
+        </label>
+      </div>
 
       <div className="row" style={{ marginTop: 12 }}>
         <button className="primary" type="submit" disabled={saving}>
