@@ -27,7 +27,18 @@ export async function POST(request) {
     return NextResponse.json({ error: "Body must be valid JSON." }, { status: 400 });
   }
 
-  const { templateName, category, date, venue, tasks = [], partners = [] } = body;
+  const {
+    templateName,
+    category,
+    date,
+    venue,
+    tasks = [],
+    partners = [],
+    // The template's volunteer-facing copy — what the event is, what to wear,
+    // what to bring, where to gather. Without this a cloned event sends a bare
+    // poll, and the organiser retypes the same briefing every time.
+    details = {},
+  } = body;
 
   if (!templateName || !date || !venue) {
     return NextResponse.json(
@@ -52,6 +63,10 @@ export async function POST(request) {
           pillar: PILLAR_FROM_CATEGORY[category] || null,
           question: `Join ${templateName} on ${date}?`,
           status: "open",
+          description: details.description || null,
+          dress_code: details.dress_code || null,
+          what_to_bring: details.what_to_bring || null,
+          meeting_point: details.meeting_point || null,
         });
         break;
       } catch (e) {

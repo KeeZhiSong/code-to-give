@@ -74,7 +74,10 @@ export async function POST(request) {
           // message must not cost them the invite, so it's best-effort.
           if (detailsText) {
             try {
-              await sendText(chatId, detailsText);
+              // Built once, personalised on the way out — first name only,
+              // with a neutral fallback so a blank name never reads as "Hi !".
+              const firstName = (r.name || "").trim().split(/\s+/)[0] || "there";
+              await sendText(chatId, detailsText.replaceAll("{name}", firstName));
               await sleep(SEND_DELAY_MS);
             } catch {
               /* the poll below still goes out */

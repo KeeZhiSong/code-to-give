@@ -33,6 +33,14 @@ const CATEGORIES = ["Items To Serve (R3)", "Knowledge To Serve", "Peace To Serve
 const SEED_TEMPLATES = [
   {
     id: "tmpl-giftik",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Help distribute pre-loved and new items to migrant workers. You'll be on registration, packing bundles, or guiding guests through the queue — we'll match you to a role on arrival, no experience needed.",
+      dress_code: "Comfortable clothes and covered shoes",
+      what_to_bring: "A water bottle and a cap",
+      meeting_point: "Look for the Passion To Serve banner at the main entrance",
+    },
     name: "GIFTIK Distribution Drive",
     category: "Items To Serve (R3)",
     tasks: [
@@ -62,6 +70,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-food",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Prepare and serve hot meals for migrant workers and their families. You'll be packing meals, serving at the counter, or helping guests find a seat.",
+      dress_code: "Comfortable clothes, covered shoes, hair tied back",
+      what_to_bring: "A water bottle",
+      meeting_point: "Report to the kitchen entrance",
+    },
     name: "Food To Serve",
     category: "Items To Serve (R3)",
     tasks: [
@@ -83,6 +99,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-used-items",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Sort and categorise donated items so they can be redistributed. Expect light lifting and a lot of folding — good company guaranteed.",
+      dress_code: "Old clothes you don't mind getting dusty, covered shoes",
+      what_to_bring: "A water bottle and work gloves if you have them",
+      meeting_point: "Collection point, look for the sorting tables",
+    },
     name: "Used Items Collection Drive",
     category: "Items To Serve (R3)",
     tasks: [
@@ -108,6 +132,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-beach-cleanup",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Join us in clearing litter from the shoreline and sorting what we collect for recycling. A morning outdoors that visibly changes the place you're standing in.",
+      dress_code: "Light clothes, covered shoes, sun protection",
+      what_to_bring: "A water bottle, cap and sunscreen — gloves and bags are provided",
+      meeting_point: "Gather at the car park entrance",
+    },
     name: "Beach Cleanup",
     category: "Items To Serve (R3)",
     tasks: [
@@ -134,6 +166,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-giftik-platform",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Help run the GIFTIK online platform — matching donors with recipients, verifying details and coordinating handovers. Suits anyone comfortable working on a laptop.",
+      dress_code: "Smart casual",
+      what_to_bring: "Your laptop if you have one",
+      meeting_point: "Ask at the front desk for the GIFTIK team",
+    },
     name: "GIFTIK e-Platform Update",
     category: "Items To Serve (R3)",
     tasks: [
@@ -148,6 +188,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-academic-support",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Tutor students one-to-one or in small groups. You'll be matched to a subject you're comfortable with, and materials are prepared for you.",
+      dress_code: "Smart casual",
+      what_to_bring: "A pen and any teaching materials you'd like to use",
+      meeting_point: "Report to the learning centre reception",
+    },
     name: "Academic Support",
     category: "Knowledge To Serve",
     tasks: [
@@ -163,6 +211,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-financial-literacy",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Help run a workshop on budgeting, saving and remittances. You'll be supporting the speaker, assisting participants with activities, and helping at registration.",
+      dress_code: "Smart casual",
+      what_to_bring: "Just yourself — all materials are provided",
+      meeting_point: "Registration desk outside the seminar room",
+    },
     name: "Financial Literacy Workshop",
     category: "Knowledge To Serve",
     tasks: [
@@ -179,6 +235,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-digital-literacy",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Sit alongside learners as they build everyday digital skills — email, online forms, staying safe online. Patience matters more than technical expertise.",
+      dress_code: "Smart casual",
+      what_to_bring: "Your laptop if you have one; devices are otherwise provided",
+      meeting_point: "Computer lab, ask for the Passion To Serve session",
+    },
     name: "Digital Literacy Workshop",
     category: "Knowledge To Serve",
     tasks: [
@@ -195,6 +259,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-env-literacy",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Run hands-on demonstrations of composting, upcycling and waste reduction. Practical, messy and genuinely fun.",
+      dress_code: "Clothes you don't mind getting dirty",
+      what_to_bring: "A water bottle — all materials are provided",
+      meeting_point: "Workshop area, follow the signs",
+    },
     name: "Environmental Literacy — DIY Waste Reduction",
     category: "Knowledge To Serve",
     tasks: [
@@ -211,6 +283,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-ai-coding",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Teach or assist in beginner coding and AI sessions. You'll be walking learners through exercises and troubleshooting alongside them — you don't need to be an expert, just a step ahead.",
+      dress_code: "Smart casual",
+      what_to_bring: "Your laptop and charger",
+      meeting_point: "Computer lab, ask for the coding session",
+    },
     name: "Specific Enrichment — AI & Coding",
     category: "Knowledge To Serve",
     tasks: [
@@ -227,6 +307,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-art-crafts",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Facilitate a craft session — helping participants with materials, demonstrating techniques and keeping the table stocked.",
+      dress_code: "Clothes you don't mind getting paint on",
+      what_to_bring: "An apron if you have one; materials are provided",
+      meeting_point: "Activity hall, look for the craft tables",
+    },
     name: "Art & Crafts",
     category: "Knowledge To Serve",
     tasks: [
@@ -243,6 +331,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-health-talk",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Support a health talk on nutrition and preventive care. You'll help at registration, hand out materials, and assist participants during the Q&A.",
+      dress_code: "Smart casual",
+      what_to_bring: "Just yourself — all materials are provided",
+      meeting_point: "Registration desk outside the seminar room",
+    },
     name: "Health Talk — Nutrition, Cancer Prevention",
     category: "Knowledge To Serve",
     tasks: [
@@ -259,6 +355,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-happiness",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Spend the session running games, conversation and light activities with our guests. The point is company — bring your energy.",
+      dress_code: "Comfortable clothes",
+      what_to_bring: "A water bottle",
+      meeting_point: "Main hall, look for the Passion To Serve banner",
+    },
     name: "Happiness Sessions",
     category: "Peace To Serve",
     tasks: [
@@ -274,6 +378,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-recreation",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Help run recreational games and sports. You'll be setting up, refereeing, and making sure everyone gets a turn.",
+      dress_code: "Sports attire and covered shoes",
+      what_to_bring: "A water bottle and a towel",
+      meeting_point: "Sports hall entrance",
+    },
     name: "Recreation",
     category: "Peace To Serve",
     tasks: [
@@ -290,6 +402,14 @@ const SEED_TEMPLATES = [
   },
   {
     id: "tmpl-yoga",
+    // Volunteer-facing copy — carried into the event on clone and sent
+    // ahead of the RSVP poll (see lib/eventMessage.js).
+    details: {
+      description: "Assist at a yoga and mindfulness session — laying out mats, guiding latecomers, and supporting the instructor throughout.",
+      dress_code: "Comfortable stretchy clothes",
+      what_to_bring: "A water bottle; mats are provided",
+      meeting_point: "Studio entrance, please arrive 15 minutes early",
+    },
     name: "Yoga / Mindfulness",
     category: "Peace To Serve",
     tasks: [
@@ -405,6 +525,7 @@ export default function EventDispatchBoard() {
           venue: cloneForm.venue,
           tasks: tmpl.tasks,
           partners: tmpl.logisticsPartners,
+          details: tmpl.details || {},
         }),
       });
       const data = await res.json();
