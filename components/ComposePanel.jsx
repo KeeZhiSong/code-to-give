@@ -15,6 +15,7 @@ export default function ComposePanel({ event, recipients, onSent }) {
   const [mode, setMode] = useState("poll");
   const [message, setMessage] = useState(DEFAULT_TEXT);
   const [includeDetails, setIncludeDetails] = useState(true);
+  const [welcomeOnly, setWelcomeOnly] = useState(false);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -22,13 +23,26 @@ export default function ComposePanel({ event, recipients, onSent }) {
   // Only worth offering if the event actually has something to say.
   const hasDetails = Boolean(
     event &&
-      (event.starts_at ||
-        event.venue ||
-        event.meeting_point ||
-        event.what_to_bring ||
-        event.dress_code ||
-        event.description)
+    (event.starts_at ||
+      event.venue ||
+      event.meeting_point ||
+      event.what_to_bring ||
+      event.dress_code ||
+      event.description),
   );
+
+  // A welcome/intro text shouldn't repeat on someone who's already had one —
+  // skip anyone with prior event history when this is checked.
+  const repeatsSelected = recipients.filter(
+    (r) => Array.isArray(r.eventsAttended) && r.eventsAttended.length > 0,
+  ).length;
+  const sendRecipients =
+    mode === "text" && welcomeOnly
+      ? recipients.filter(
+          (r) =>
+            Array.isArray(r.eventsAttended) && r.eventsAttended.length === 0,
+        )
+      : recipients;
 
   async function send() {
     setSending(true);
@@ -40,7 +54,7 @@ export default function ComposePanel({ event, recipients, onSent }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode,
-          recipients,
+          recipients: sendRecipients,
           message,
           eventId: event?.id,
           includeDetails: includeDetails && hasDetails,
@@ -84,7 +98,10 @@ export default function ComposePanel({ event, recipients, onSent }) {
           </p>
 
           {hasDetails ? (
-            <label className="row" style={{ cursor: "pointer", marginBottom: 14 }}>
+            <label
+              className="row"
+              style={{ cursor: "pointer", marginBottom: 14 }}
+            >
               <input
                 type="checkbox"
                 checked={includeDetails}
@@ -113,6 +130,24 @@ export default function ComposePanel({ event, recipients, onSent }) {
             <code>{"{name}"}</code> is replaced with each recipient&apos;s first
             name.
           </p>
+
+          {repeatsSelected > 0 && (
+            <label
+              className="row"
+              style={{ cursor: "pointer", marginBottom: 14 }}
+            >
+              <input
+                type="checkbox"
+                checked={welcomeOnly}
+                onChange={(e) => setWelcomeOnly(e.target.checked)}
+              />
+              <span className="muted">
+                This is a welcome/intro message — skip {repeatsSelected}{" "}
+                volunteer{repeatsSelected === 1 ? "" : "s"} who&apos;ve already
+                been sent one.
+              </span>
+            </label>
+          )}
         </>
       )}
 
@@ -120,11 +155,11 @@ export default function ComposePanel({ event, recipients, onSent }) {
         <button
           className="primary"
           onClick={send}
-          disabled={sending || recipients.length === 0}
+          disabled={sending || sendRecipients.length === 0}
         >
           {sending
-            ? `Sending to ${recipients.length}…`
-            : `Send ${mode === "poll" ? "poll" : "message"} to ${recipients.length}`}
+            ? `Sending to ${sendRecipients.length}…`
+            : `Send ${mode === "poll" ? "poll" : "message"} to ${sendRecipients.length}`}
         </button>
         <span className="muted">~1.5s between sends (ban-safety)</span>
       </div>
