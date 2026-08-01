@@ -22,6 +22,7 @@ export default function RecipientList({
   onToggle,
   onSelectAll,
   onRejoin,
+  onBackupToggle,
 }) {
   const { options, visible } = filters;
   const selectable = visible.filter((p) => !p.optedOut);
@@ -35,10 +36,22 @@ export default function RecipientList({
     : 0;
   const hiddenSelected = isSelectable ? selected.size - chosenCount : 0;
 
+  // Which secondary filters apply to the audience currently selected.
+  const isBeneficiaryTab = /^benef/i.test(filters.type || "");
+  const isVolunteerTab = /^volunt/i.test(filters.type || "");
+  const showVolunteerFilters = !isBeneficiaryTab;
+  const showBeneficiaryFilters = !isVolunteerTab;
+
   const showFilters =
-    options.types.length > 1 ||
-    options.pillars.length > 0 ||
-    options.roles.length > 0;
+    (showVolunteerFilters &&
+      (options.pillars.length > 0 || options.roles.length > 0)) ||
+    (showBeneficiaryFilters &&
+      (options.languages.length > 0 || options.courses.length > 0));
+
+  // "Beneficiary" + "s" is "Beneficiarys". Enough of a rule for the two words
+  // this ever sees, without pulling in a pluralisation library.
+  const plural = (word) =>
+    /y$/i.test(word) ? `${word.slice(0, -1)}ies` : `${word}s`;
 
   return (
     <section className="card">
@@ -83,24 +96,45 @@ export default function RecipientList({
 
       {people.length > 0 && (
         <>
+          {/* Audience tabs. Volunteers and beneficiaries are different groups
+              who need different messages — a Tamil literacy class and a
+              logistics drive shouldn't go to the same list. Only shown once
+              both kinds actually exist. */}
+          {options.types.length > 1 && (
+            <div
+              className="seg"
+              role="group"
+              aria-label="Audience"
+              style={{ marginBottom: 10 }}
+            >
+              <button
+                type="button"
+                className={filters.type === ANY ? "on" : ""}
+                aria-pressed={filters.type === ANY}
+                onClick={() => filters.setAudience(ANY)}
+              >
+                Everyone
+              </button>
+              {options.types.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={filters.type === t ? "on" : ""}
+                  aria-pressed={filters.type === t}
+                  onClick={() => filters.setAudience(t)}
+                >
+                  {plural(t)}
+                </button>
+              ))}
+            </div>
+          )}
+
           {showFilters && (
             <div className="row" style={{ marginBottom: 10, flexWrap: "wrap" }}>
-              {/* Only worth showing once both kinds of people exist. */}
-              {options.types.length > 1 && (
-                <select
-                  value={filters.type}
-                  onChange={(e) => filters.setType(e.target.value)}
-                  aria-label="Filter by volunteer or beneficiary"
-                >
-                  <option value={ANY}>Everyone</option>
-                  {options.types.map((t) => (
-                    <option key={t} value={t}>
-                      {t}s
-                    </option>
-                  ))}
-                </select>
-              )}
-              {options.pillars.length > 0 && (
+              {/* Pillars and roles describe volunteers; courses and languages
+                  describe beneficiaries. Show whichever the current audience
+                  can actually be filtered by. */}
+              {showVolunteerFilters && options.pillars.length > 0 && (
                 <select
                   value={filters.pillar}
                   onChange={(e) => filters.setPillar(e.target.value)}
@@ -114,7 +148,7 @@ export default function RecipientList({
                   ))}
                 </select>
               )}
-              {options.roles.length > 0 && (
+              {showVolunteerFilters && options.roles.length > 0 && (
                 <select
                   value={filters.role}
                   onChange={(e) => filters.setRole(e.target.value)}
@@ -124,6 +158,34 @@ export default function RecipientList({
                   {options.roles.map((r) => (
                     <option key={r} value={r}>
                       {r}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {showBeneficiaryFilters && options.languages.length > 0 && (
+                <select
+                  value={filters.language}
+                  onChange={(e) => filters.setLanguage(e.target.value)}
+                  aria-label="Filter by language"
+                >
+                  <option value={ANY}>All languages</option>
+                  {options.languages.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {showBeneficiaryFilters && options.courses.length > 0 && (
+                <select
+                  value={filters.course}
+                  onChange={(e) => filters.setCourse(e.target.value)}
+                  aria-label="Filter by course"
+                >
+                  <option value={ANY}>All courses</option>
+                  {options.courses.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
                     </option>
                   ))}
                 </select>
@@ -195,6 +257,25 @@ export default function RecipientList({
                       p.eventsAttended.length === 0 && (
                         <span className="tag">New</span>
                       )}
+                    {/* Standby volunteers the backup-alert cron can message
+                        when a confirmed headcount falls short close to an
+                        event — organiser-toggled, not self-declared. */}
+                    {onBackupToggle && !p.optedOut && (
+                      <label
+                        className="row"
+                        style={{ cursor: "pointer" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={Boolean(p.isBackup)}
+                          onChange={(e) =>
+                            onBackupToggle(p.phone, e.target.checked)
+                          }
+                        />
+                        <span className="muted">Backup</span>
+                      </label>
+                    )}
                     {p.optedOut && (
                       <>
                         <span className="tag">opted out</span>
