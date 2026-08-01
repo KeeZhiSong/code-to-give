@@ -3,6 +3,7 @@ import "./globals.css";
 // styled entirely with .pf-* classes. Dropping this import renders them
 // unstyled, which is easy to miss because the console itself still looks fine.
 import "./pts-features.css";
+import Sidebar from "@/components/Sidebar.jsx";
 
 export const metadata = {
   title: "Passion To Serve",
@@ -15,7 +16,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       {/* Explorer/dispatch/volunteer pages compute values during render that
           can differ between server and client; suppress the resulting noise. */}
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <div className="shell">
+          <Sidebar />
+          <main className="shell-main">{children}</main>
+        </div>
+      </body>
     </html>
   );
 }

@@ -41,6 +41,12 @@ export default async function EventLayout({ children, params }) {
 
   return (
     <div className="wrap">
+      {/* An explicit way out. The sidebar covers top-level navigation, but
+          inside an event you also want "back to the list I came from". */}
+      <Link href="/" className="backlink">
+        ← All events
+      </Link>
+
       <AppHeader title={event.name} subtitle={details.join(" · ")}>
         <Link href={`/share/${id}`} className="btnlink" target="_blank">
           Share headcount

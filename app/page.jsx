@@ -42,14 +42,11 @@ export default function EventsIndex() {
 
   return (
     <div className="wrap">
+      {/* Explorer lives in the sidebar now — no need to repeat it here. */}
       <AppHeader
-        title="Passion To Serve"
+        title="Events"
         subtitle="Coordinate volunteer-led events, end to end."
-      >
-        <Link href="/explorer" className="btnlink">
-          Public explorer
-        </Link>
-      </AppHeader>
+      />
 
       <section className="card">
         <div className="between" style={{ marginBottom: 10 }}>
