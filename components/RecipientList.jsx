@@ -21,6 +21,7 @@ export default function RecipientList({
   selected,
   onToggle,
   onSelectAll,
+  onRejoin,
 }) {
   const { options, visible } = filters;
   const selectable = visible.filter((p) => !p.optedOut);
@@ -184,7 +185,25 @@ export default function RecipientList({
                       </span>
                     )}
                     {p.vipStatus && <span className="tag">VIP</span>}
-                    {p.optedOut && <span className="tag">opted out</span>}
+                    {p.optedOut && (
+                      <>
+                        <span className="tag">opted out</span>
+                        {/* Someone can ask to come back in person, where the
+                            WhatsApp keyword never reaches us. */}
+                        {onRejoin && (
+                          <button
+                            type="button"
+                            className="tiny"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onRejoin(p.phone);
+                            }}
+                          >
+                            Add back
+                          </button>
+                        )}
+                      </>
+                    )}
                     <span className="ph">{maskPhone(p.phone)}</span>
                   </>
                 );
