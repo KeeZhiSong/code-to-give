@@ -6,6 +6,16 @@ import {
   Activity, AlertTriangle, Boxes, Clock, Star, Minus, Plus
 } from "lucide-react";
 
+// Operations — on-the-day logistics: inventory, dispatches, open incidents.
+//
+// ORGANISER-FACING, like everything else on this site. It was originally
+// framed as a dashboard "for incoming volunteers", and lived at /volunteer,
+// which invited exactly the audience this tool doesn't serve: volunteers and
+// beneficiaries reach us over WhatsApp, never through the console.
+//
+// NOTE: still running on seed data. Inventory and incidents have no tables
+// behind them yet.
+
 // ---------- palette / type tokens ----------
 const C = {
   paper: "#F2ECDA",

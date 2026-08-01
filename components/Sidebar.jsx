@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { href: "/", label: "Events", hint: "Plan and run", exact: true },
   { href: "/dispatch", label: "Templates", hint: "Reuse a past event" },
-  { href: "/volunteer", label: "Operations", hint: "On-the-day logistics" },
+  { href: "/operations", label: "Operations", hint: "On-the-day logistics" },
 ];
 
 export default function Sidebar() {

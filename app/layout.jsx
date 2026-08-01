@@ -14,7 +14,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      {/* The dispatch and volunteer pages compute values during render that
+      {/* The dispatch and operations pages compute values during render that
           can differ between server and client; suppress the resulting noise. */}
       <body suppressHydrationWarning>
         <div className="shell">
