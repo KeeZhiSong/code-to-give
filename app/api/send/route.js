@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { checkWhatsApp, sendPoll, sendText, toChatId } from "../../../lib/greenapi.js";
 import { getOptOuts } from "../../../lib/store.js";
 import { getEvent, recordPollPrompt } from "../../../lib/events.js";
+import { formatEventDetails } from "../../../lib/eventMessage.js";
 import { EVENT, SEND_DELAY_MS, assertConfigured } from "../../../lib/config.js";
 
 export const dynamic = "force-dynamic";
@@ -10,8 +11,13 @@ export const maxDuration = 60; // Vercel: sends are sequential and deliberately 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * POST { mode: "poll" | "text", recipients: [{name, phone}], message?, eventId? }
+ * POST { mode, recipients, message?, eventId?, includeDetails? }
  * Sends one at a time with a delay — ban-safety. Never parallelise this.
+ *
+ * `includeDetails` sends the event's details as a text message immediately
+ * before the poll, so a volunteer isn't asked to commit to a Sunday without
+ * knowing the date, the venue, or what to bring. It doubles the message count,
+ * which is why it's a per-send choice rather than always on.
  */
 export async function POST(request) {
   try {
@@ -21,6 +27,7 @@ export async function POST(request) {
       recipients = [],
       message = "",
       eventId = null,
+      includeDetails = false,
     } = await request.json();
 
     if (!recipients.length) {
@@ -36,6 +43,12 @@ export async function POST(request) {
     const poll = selected
       ? { campaign: selected.name, question: selected.question, options: EVENT.options }
       : EVENT;
+
+    // Built once, sent to everyone — it's the same event for all of them.
+    const detailsText =
+      mode === "poll" && includeDetails && selected
+        ? formatEventDetails(selected)
+        : "";
 
     const optOuts = await getOptOuts();
     const results = [];
@@ -56,6 +69,17 @@ export async function POST(request) {
 
         const chatId = toChatId(phone);
         if (mode === "poll") {
+          // Details first so the poll lands last — it's the thing they act on,
+          // and it should be at the bottom of the chat. A failed details
+          // message must not cost them the invite, so it's best-effort.
+          if (detailsText) {
+            try {
+              await sendText(chatId, detailsText);
+              await sleep(SEND_DELAY_MS);
+            } catch {
+              /* the poll below still goes out */
+            }
+          }
           const res = await sendPoll(chatId, poll);
           // Remember which event this poll was for. Votes come back carrying
           // the same id as pollMessageData.stanzaId, so the webhook can resolve

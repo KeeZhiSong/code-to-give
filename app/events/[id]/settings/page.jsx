@@ -24,15 +24,19 @@ export default function SettingsPage({ params }) {
 
   useEffect(() => {
     if (!event) return;
+    // Every column is nullable, and a null in a controlled input makes React
+    // complain and the field uneditable — coerce each one back to "".
+    const text = (v) => v ?? "";
     setForm({
       ...BLANK_EVENT,
-      ...event,
+      ...Object.fromEntries(
+        Object.keys(BLANK_EVENT).map((k) => [k, text(event[k])])
+      ),
       starts_at: toLocalInput(event.starts_at),
+      ends_at: toLocalInput(event.ends_at),
       capacity: event.capacity ?? "",
       points_value: event.points_value ?? "",
-      pillar: event.pillar ?? "",
-      track: event.track ?? "",
-      venue: event.venue ?? "",
+      status: event.status || "open",
     });
   }, [event]);
 
