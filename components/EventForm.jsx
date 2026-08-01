@@ -133,6 +133,27 @@ export default function EventForm({
             placeholder="A water bottle and a cap"
           />
         </label>
+
+        {/* Who to look for on arrival, and who to call if they're lost. */}
+        <label>
+          <span className="muted">On-the-day contact</span>
+          <input
+            type="text"
+            value={form.contact_name}
+            onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
+            placeholder="Priya (Volunteer Lead)"
+          />
+        </label>
+
+        <label>
+          <span className="muted">Contact number</span>
+          <input
+            type="text"
+            value={form.contact_phone}
+            onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+            placeholder="+65 9123 4567"
+          />
+        </label>
       </div>
 
       <label style={{ display: "block", marginTop: 12 }}>
