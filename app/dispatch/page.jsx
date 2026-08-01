@@ -313,6 +313,8 @@ export default function EventDispatchBoard() {
   const [activeTemplateId, setActiveTemplateId] = useState(null);
   const [activeEventId, setActiveEventId] = useState(null);
   const [cloneForm, setCloneForm] = useState({ date: "", venue: "" });
+  // Result of also creating the clone as a real event in the database.
+  const [cloneStatus, setCloneStatus] = useState(null);
   const [newTmpl, setNewTmpl] = useState({ name: "", category: CATEGORIES[0], tasks: "", partners: "", roles: "" });
   const [saveError, setSaveError] = useState(false);
 
@@ -365,13 +367,15 @@ export default function EventDispatchBoard() {
   // ---------- actions ----------
   function openClone(templateId) {
     setActiveTemplateId(templateId);
+    setCloneStatus(null);
     setCloneForm({ date: "", venue: "" });
     setView("clone");
   }
 
-  function confirmClone() {
+  async function confirmClone() {
     if (!cloneForm.date || !cloneForm.venue) return;
     const tmpl = templates.find((t) => t.id === activeTemplateId);
+
     const newEvent = {
       id: uid(),
       templateId: tmpl.id,
@@ -385,6 +389,37 @@ export default function EventDispatchBoard() {
     setEvents((prev) => [...prev, newEvent]);
     setActiveEventId(newEvent.id);
     setView("detail");
+
+    // Also create it for real, so the clone appears on the events index and in
+    // the explorer with its checklist already on the task board — a template
+    // that only produces a local card isn't duplication, it's a note to self.
+    setCloneStatus({ state: "saving", message: "Creating event…" });
+    try {
+      const res = await fetch("/api/events/from-template", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateName: tmpl.name,
+          category: tmpl.category,
+          date: cloneForm.date,
+          venue: cloneForm.venue,
+          tasks: tmpl.tasks,
+          partners: tmpl.logisticsPartners,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setCloneStatus({ state: "error", message: data.error });
+        return;
+      }
+      setCloneStatus({
+        state: "done",
+        message: `Created "${data.event.name}" with ${data.taskCount} tasks and ${data.partnerCount} partners.`,
+        href: `/events/${data.event.id}`,
+      });
+    } catch (e) {
+      setCloneStatus({ state: "error", message: e.message });
+    }
   }
 
   function toggleItem(section, itemId) {
@@ -668,6 +703,28 @@ export default function EventDispatchBoard() {
               >
                 <Stamp size={15} /> Stamp &amp; clone
               </button>
+
+              {/* Whether the clone became a real event, not just a local card. */}
+              {cloneStatus && (
+                <p
+                  style={{
+                    marginTop: 12,
+                    fontSize: 13,
+                    fontFamily: "'Inter', sans-serif",
+                    color: cloneStatus.state === "error" ? C.stamp : C.teal,
+                  }}
+                >
+                  {cloneStatus.message}
+                  {cloneStatus.href && (
+                    <>
+                      {" "}
+                      <a href={cloneStatus.href} style={{ color: C.teal, fontWeight: 600 }}>
+                        Open it →
+                      </a>
+                    </>
+                  )}
+                </p>
+              )}
             </div>
           </div>
         </div>

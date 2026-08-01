@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 const DIMENSIONS = [
@@ -13,7 +14,7 @@ const DIMENSIONS = [
  * elsewhere (headcount, task board, logistics partners), plus a concrete
  * next action when it's low. See lib/readiness.js for how it's computed.
  */
-export default function ReadinessScore({ eventId, onReinvite }) {
+export default function ReadinessScore({ eventId }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -77,13 +78,15 @@ export default function ReadinessScore({ eventId, onReinvite }) {
             <li key={i} className="pf-suggestion">
               <span>{s.text}</span>
               {s.type === "volunteers" && s.recipients?.length > 0 && (
-                <button
+                // Hands off to Broadcast by intent, not by listing phone
+                // numbers in the URL — that page re-asks this endpoint who it
+                // meant, so nothing personal ends up in browser history.
+                <Link
                   className="pf-btn pf-primary pf-suggestion-action"
-                  type="button"
-                  onClick={() => onReinvite?.(s.recipients)}
+                  href={`/events/${eventId}/broadcast?segment=past-volunteers`}
                 >
                   Re-invite
-                </button>
+                </Link>
               )}
             </li>
           ))}
