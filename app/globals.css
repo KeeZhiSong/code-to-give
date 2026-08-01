@@ -223,3 +223,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   animation: pulse 1.8s ease-in-out infinite;
 }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+/* Inline row action — small enough not to compete with the name beside it. */
+button.tiny { padding: 2px 8px; font-size: 11px; font-weight: 500; }

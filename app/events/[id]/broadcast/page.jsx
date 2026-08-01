@@ -84,6 +84,14 @@ export default function BroadcastPage({ params }) {
           onSync={recipients.sync}
           syncing={recipients.syncing}
           loading={recipients.loading}
+          onRejoin={async (phone) => {
+            await fetch("/api/optouts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ phone, optedOut: false }),
+            });
+            await recipients.reload();
+          }}
           selected={selected}
           onToggle={(phone) =>
             setSelected((prev) => {
