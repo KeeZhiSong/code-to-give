@@ -89,7 +89,10 @@ input[type="number"], input[type="datetime-local"] {
 .tag {
   font-size: 11px; padding: 1px 6px; border-radius: 999px;
   background: #f2f4f7; color: var(--muted); border: 1px solid var(--line);
+  white-space: nowrap;
 }
+/* Loyalty standing — the signal for "re-invite this one". */
+.tag.pts { background: #eef7f2; color: var(--yes); border-color: #c6e3d5; }
 
 textarea, input[type="text"] {
   width: 100%; padding: 10px 12px; font: inherit;

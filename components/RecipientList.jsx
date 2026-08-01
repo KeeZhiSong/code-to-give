@@ -175,6 +175,14 @@ export default function RecipientList({
                       {p.name || "—"}
                       {profile && <span className="sub">{profile}</span>}
                     </span>
+                    {/* A returning volunteer is who you re-invite when
+                        headcount is short — worth seeing at a glance. */}
+                    {p.loyaltyPoints > 0 && (
+                      <span className="tag pts" title={`${p.loyaltyPoints} loyalty points`}>
+                        {p.loyaltyTier ? `${p.loyaltyTier} · ` : ""}
+                        {p.loyaltyPoints} pts
+                      </span>
+                    )}
                     {p.vipStatus && <span className="tag">VIP</span>}
                     {p.optedOut && <span className="tag">opted out</span>}
                     <span className="ph">{maskPhone(p.phone)}</span>
