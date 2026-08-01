@@ -31,10 +31,10 @@ export default function PeoplePage({ params }) {
 
   // Awaiting = registered people who haven't answered this event's poll.
   const answered = new Set(
-    [...roster.going, ...roster.notGoing].map((r) => r.phone)
+    [...roster.going, ...roster.notGoing].map((r) => r.phone),
   );
   const awaiting = recipients.people.filter(
-    (p) => !p.optedOut && !answered.has(p.phone)
+    (p) => !p.optedOut && !answered.has(p.phone),
   ).length;
 
   return (
@@ -54,6 +54,14 @@ export default function PeoplePage({ params }) {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ phone, optedOut: false }),
+            });
+            await recipients.reload();
+          }}
+          onBackupToggle={async (phone, isBackup) => {
+            await fetch(`/api/volunteers/${phone}/backup`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ isBackup }),
             });
             await recipients.reload();
           }}
