@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 
 const NAV = [
   { href: "/", label: "Events", hint: "Plan and run", exact: true },
+  { href: "/beneficiaries", label: "Beneficiaries", hint: "Who we serve" },
   { href: "/dispatch", label: "Templates", hint: "Reuse a past event" },
   { href: "/operations", label: "Operations", hint: "On-the-day logistics" },
 ];
