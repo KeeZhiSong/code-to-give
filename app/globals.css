@@ -94,6 +94,17 @@ input[type="number"], input[type="datetime-local"] {
 /* Loyalty standing — the signal for "re-invite this one". */
 .tag.pts { background: #eef7f2; color: var(--yes); border-color: #c6e3d5; }
 
+/* Undo affordance inside a tag (an attendance logged by mistake). Sits on the
+   tag rather than in a menu: the correction happens right where the error is
+   visible. */
+.tag .x {
+  all: unset; cursor: pointer; margin-left: 5px; padding: 0 1px;
+  font-size: 12px; line-height: 1; color: var(--muted); opacity: 0.6;
+}
+.tag .x:hover { opacity: 1; color: var(--no); }
+.tag .x:disabled { cursor: default; opacity: 0.3; }
+.tag .x:focus-visible { outline: 2px solid var(--line); border-radius: 3px; }
+
 textarea, input[type="text"] {
   width: 100%; padding: 10px 12px; font: inherit;
   border: 1px solid var(--line); border-radius: 8px; background: #fff; color: inherit;

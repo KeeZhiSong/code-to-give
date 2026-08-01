@@ -46,6 +46,13 @@ export default function BeneficiariesPage() {
 
   const [search, setSearch] = useState("");
 
+  // Attendance logging. Which row's picker is open, what it has selected, and
+  // which phone is mid-write — so only that row's buttons disable.
+  const [events, setEvents] = useState([]);
+  const [pickerFor, setPickerFor] = useState(null);
+  const [pick, setPick] = useState("");
+  const [busyPhone, setBusyPhone] = useState("");
+
   const load = useCallback(
     () =>
       fetch("/api/beneficiaries")
@@ -63,6 +70,49 @@ export default function BeneficiariesPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Events are only needed for the attendance picker, so a failure here is
+  // never worth blocking the page over — the picker just says there are none.
+  useEffect(() => {
+    fetch("/api/events")
+      .then((r) => r.json())
+      .then((d) => setEvents(d.events || []))
+      .catch(() => {});
+  }, []);
+
+  /**
+   * Log or undo an attendance.
+   *
+   * Beneficiaries mostly don't RSVP — they turn up to a GIFTIK queue or walk
+   * into a class. The roster's "mark attended" needs a poll answer first, so
+   * without this the VIP Pass is unreachable for the people it's actually for.
+   *
+   * Same endpoint the roster uses: one attendance writer, so points, VIP and
+   * events_attended can't drift apart.
+   */
+  async function logAttendance(person, eventName, undo = false) {
+    setBusyPhone(person.phone);
+    setError("");
+    try {
+      const res = await fetch(
+        `/api/volunteers/${encodeURIComponent(person.phone)}/attended`,
+        {
+          method: undo ? "DELETE" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventName }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) return setError(data.error);
+      setPickerFor(null);
+      setPick("");
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyPhone("");
+    }
+  }
 
   async function save(e) {
     e.preventDefault();
@@ -345,6 +395,8 @@ export default function BeneficiariesPage() {
           // How many more visits until the pass unlocks (threshold is 3, so
           // the 4th attendance grants it).
           const toGo = Math.max(0, 4 - attended.length);
+          // Logging the same event twice is a no-op, so don't offer it.
+          const unlogged = events.filter((ev) => !attended.includes(ev.name));
           return (
             <div key={p.id} className="benef">
               <div className="between">
@@ -362,6 +414,15 @@ export default function BeneficiariesPage() {
                   </span>
                 </span>
                 <span className="row">
+                  <button
+                    className="tiny"
+                    onClick={() => {
+                      setPickerFor(pickerFor === p.id ? null : p.id);
+                      setPick("");
+                    }}
+                  >
+                    Log attendance
+                  </button>
                   <button className="tiny" onClick={() => startEdit(p)}>
                     Edit
                   </button>
@@ -371,20 +432,74 @@ export default function BeneficiariesPage() {
                 </span>
               </div>
 
+              {pickerFor === p.id && (
+                <div className="row" style={{ marginTop: 8, flexWrap: "wrap" }}>
+                  <select
+                    value={pick}
+                    onChange={(e) => setPick(e.target.value)}
+                    aria-label={`Event attended by ${p.name}`}
+                  >
+                    <option value="">Which event?</option>
+                    {unlogged.map((ev) => (
+                      <option key={ev.id || ev.name} value={ev.name}>
+                        {ev.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="primary tiny"
+                    disabled={!pick || busyPhone === p.phone}
+                    onClick={() => logAttendance(p, pick)}
+                  >
+                    {busyPhone === p.phone ? "Logging…" : "Log"}
+                  </button>
+                  <button className="tiny" onClick={() => setPickerFor(null)}>
+                    Cancel
+                  </button>
+                  {unlogged.length === 0 && (
+                    <span className="muted">
+                      {events.length === 0
+                        ? "No events yet."
+                        : "Already logged for every event."}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {(p.courses || []).length > 0 && (
                 <p className="muted" style={{ margin: "6px 0 0" }}>
                   Courses: {p.courses.join(" · ")}
                 </p>
               )}
 
-              <p className="muted" style={{ margin: "4px 0 0" }}>
-                {attended.length === 0
-                  ? "No attendances logged yet"
-                  : `${attended.length} attended: ${attended.join(" · ")}`}
-                {!p.vipStatus &&
-                  attended.length > 0 &&
-                  ` — ${toGo} more for VIP`}
-              </p>
+              {attended.length === 0 ? (
+                <p className="muted" style={{ margin: "4px 0 0" }}>
+                  No attendances logged yet
+                </p>
+              ) : (
+                <div className="row" style={{ flexWrap: "wrap", marginTop: 4 }}>
+                  <span className="muted">{attended.length} attended:</span>
+                  {attended.map((name) => (
+                    <span key={name} className="tag" title={name}>
+                      {name}
+                      {/* Logging grants points and can flip a VIP Pass, so a
+                          mis-tap at a busy queue needs a way back. */}
+                      <button
+                        type="button"
+                        className="x"
+                        aria-label={`Undo ${name}`}
+                        disabled={busyPhone === p.phone}
+                        onClick={() => logAttendance(p, name, true)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  {!p.vipStatus && (
+                    <span className="muted">— {toGo} more for VIP</span>
+                  )}
+                </div>
+              )}
 
               {p.notes && (
                 <p className="muted" style={{ margin: "4px 0 0" }}>
