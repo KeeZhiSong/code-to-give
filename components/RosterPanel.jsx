@@ -139,7 +139,11 @@ export default function RosterPanel({
     if (!event || attended.length === 0 || thankingAll) return;
     if (
       !confirm(
-        `Send the thank-you message to ${attended.length} ${attended.length === 1 ? "person" : "people"} who attended ${event.name}?`
+        `Send the thank-you message to everyone marked as attended?
+
+` +
+          `${attended.length} ${attended.length === 1 ? "person" : "people"}: ` +
+          `${attended.map((r) => peopleByPhone?.get(r.phone)?.name || r.phone.slice(-4)).join(", ")}`
       )
     ) {
       return;
@@ -184,9 +188,7 @@ export default function RosterPanel({
               that there's nobody it would be truthful to thank. */}
           {attended.length > 0 && (
             <button onClick={sendThanksToAll} disabled={thankingAll}>
-              {thankingAll
-                ? `Sending… (${attended.length})`
-                : `Send thanks to all (${attended.length})`}
+              {thankingAll ? "Sending…" : "Send thanks to all"}
             </button>
           )}
           <span className="live">
