@@ -6,8 +6,31 @@
 // organiser credits attendance after the event, which is the single writer
 // feeding both the re-invite list and the loyalty ledger.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { displayName, formatTime } from "@/lib/ui/format";
+
+/**
+ * Marks a number as having just changed, without touching the number itself.
+ *
+ * Returns "changed" for a beat after `value` moves, so the caller can flag the
+ * container. Deliberately not a count-up: the roster is what an organiser
+ * reads to decide manpower, and a value tweening through numbers that were
+ * never true is a lie told for decoration.
+ */
+function useChanged(value, ms = 520) {
+  const prev = useRef(value);
+  const [changed, setChanged] = useState(false);
+
+  useEffect(() => {
+    if (prev.current === value) return;
+    prev.current = value;
+    setChanged(true);
+    const t = setTimeout(() => setChanged(false), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+
+  return changed ? " changed" : "";
+}
 
 export default function RosterPanel({
   roster,
@@ -23,6 +46,12 @@ export default function RosterPanel({
   // refresh forgets, because nothing records it server-side.
   const [thanking, setThanking] = useState(() => new Set());
   const [thanked, setThanked] = useState(() => new Set());
+
+  // Poll ticks every few seconds; without a marker a headcount moving 3 → 4
+  // is invisible to anyone not staring at that exact digit.
+  const goingChanged = useChanged(roster.going.length);
+  const notGoingChanged = useChanged(roster.notGoing.length);
+  const awaitingChanged = useChanged(awaiting);
 
   async function markAttended(phone) {
     if (!event || marking.has(phone)) return;
@@ -100,15 +129,15 @@ export default function RosterPanel({
 
       <div className="counts">
         <div className="count yes">
-          <div className="n">{roster.going.length}</div>
+          <div className={`n${goingChanged}`}>{roster.going.length}</div>
           <div className="l">Going</div>
         </div>
         <div className="count no">
-          <div className="n">{roster.notGoing.length}</div>
+          <div className={`n${notGoingChanged}`}>{roster.notGoing.length}</div>
           <div className="l">Can&apos;t</div>
         </div>
         <div className="count">
-          <div className="n">{awaiting}</div>
+          <div className={`n${awaitingChanged}`}>{awaiting}</div>
           <div className="l">Awaiting</div>
         </div>
       </div>

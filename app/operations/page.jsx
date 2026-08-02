@@ -17,23 +17,29 @@ import {
 // behind them yet.
 
 // ---------- palette / type tokens ----------
+// Aliases onto the app palette in globals.css :root. These were literal hex
+// values — a fourth visual world (kraft paper + teal) alongside the console,
+// the .pf-* dashboards and the shift board. Inline styles resolve var(), so
+// the whole page re-themes from one place without touching its markup.
 const C = {
-  paper: "#F2ECDA",
-  paperDark: "#E6DDC0",
-  ink: "#232620",
-  inkSoft: "#5B5A4E",
-  kraft: "#B98F4A",
-  kraftDark: "#8A6A34",
-  teal: "#1F5C52",
-  tealDark: "#153F38",
-  tealLight: "#DCE9E4",
-  stamp: "#A63A2A",
-  line: "#C9BE9C",
-  white: "#FBFAF4",
+  paper: "var(--bg)",
+  paperDark: "var(--sunken)",
+  ink: "var(--ink)",
+  inkSoft: "var(--muted)",
+  kraft: "var(--accent)",
+  kraftDark: "var(--accent-ink)",
+  teal: "var(--yes)",
+  tealDark: "var(--yes)",
+  tealLight: "var(--yes-tint)",
+  stamp: "var(--no)",
+  line: "var(--line)",
+  white: "var(--card)",
 };
 
 const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* Fonts come from the app palette (globals.css) — Public Sans, Big Shoulders
+   and IBM Plex Mono are embedded as base64 in pts-features.css, so there is
+   nothing to fetch at runtime and no flash of unstyled text. */
 `;
 
 const SEED_INVENTORY = [
@@ -194,7 +200,7 @@ export default function VolunteerDashboard() {
         right: 14,
         border: `2px solid ${C.stamp}`,
         color: C.stamp,
-        fontFamily: "'Space Grotesk', sans-serif",
+        fontFamily: "var(--font-display)",
         fontWeight: 700,
         fontSize: 12,
         letterSpacing: 2,
@@ -211,7 +217,7 @@ export default function VolunteerDashboard() {
   );
 
   return (
-    <div style={{ background: C.paper, minHeight: "100vh", fontFamily: "'Inter', sans-serif", color: C.ink }}>
+    <div style={{ background: C.paper, minHeight: "100vh", fontFamily: "var(--font-sans)", color: C.ink }}>
       <style>{FONTS}</style>
 
       {/* Header */}
@@ -220,11 +226,11 @@ export default function VolunteerDashboard() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <ClipboardList size={22} color={C.kraft} />
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, letterSpacing: 1.5, textTransform: "uppercase" }}>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, letterSpacing: 1.5, textTransform: "uppercase" }}>
                 Volunteer Operations Dashboard
               </div>
             </div>
-            <div style={{ fontSize: 13, color: "#C9C3AE", marginTop: 4, fontFamily: "'IBM Plex Mono', monospace" }}>
+            <div style={{ fontSize: 13, color: "#C9C3AE", marginTop: 4, fontFamily: "var(--font-mono)" }}>
               Check the progress of incoming drives, manage inventory &amp; review live operation logs
             </div>
           </div>
@@ -233,7 +239,7 @@ export default function VolunteerDashboard() {
 
       {view === "dashboard" && (
         <div style={{ padding: "28px" }}>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 16, textTransform: "uppercase", letterSpacing: 1, marginBottom: 18 }}>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, textTransform: "uppercase", letterSpacing: 1, marginBottom: 18 }}>
             Current logistics overview
           </div>
 
@@ -246,7 +252,7 @@ export default function VolunteerDashboard() {
 
           {/* Live operations feed */}
           <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 8, marginBottom: 24, overflow: "hidden" }}>
-            <div style={{ background: C.ink, color: C.paper, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13 }}>
+            <div style={{ background: C.ink, color: C.paper, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13 }}>
               <Activity size={14} color={C.kraft} /> Live operations feed
             </div>
             <div style={{ maxHeight: 220, overflowY: "auto" }}>
@@ -256,7 +262,7 @@ export default function VolunteerDashboard() {
               {feed.map((f) => (
                 <div key={f.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "9px 14px", borderBottom: `1px solid ${C.paperDark}`, fontSize: 13 }}>
                   <span>{f.text}</span>
-                  <span style={{ color: C.inkSoft, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, whiteSpace: "nowrap" }}>{timeAgo(f.ts)}</span>
+                  <span style={{ color: C.inkSoft, fontFamily: "var(--font-mono)", fontSize: 12, whiteSpace: "nowrap" }}>{timeAgo(f.ts)}</span>
                 </div>
               ))}
             </div>
@@ -265,7 +271,7 @@ export default function VolunteerDashboard() {
           {/* Inventory & roster */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20, marginBottom: 24 }}>
             <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 8, overflow: "hidden" }}>
-              <div style={{ background: C.tealLight, color: C.tealDark, padding: "10px 14px", display: "flex", alignItems: "center", gap: 6, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13 }}>
+              <div style={{ background: C.tealLight, color: C.tealDark, padding: "10px 14px", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13 }}>
                 <Boxes size={14} /> Inventory &amp; asset tracking
               </div>
               <div>
@@ -276,12 +282,12 @@ export default function VolunteerDashboard() {
                     <div key={it.id} style={{ padding: "10px 14px", borderBottom: `1px solid ${C.paperDark}` }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
                         <span style={{ fontSize: 13, fontWeight: 600 }}>{it.name}</span>
-                        <span style={{ fontSize: 11, color: isLow ? C.stamp : C.inkSoft, fontFamily: "'IBM Plex Mono', monospace" }}>
+                        <span style={{ fontSize: 12, color: isLow ? C.stamp : C.inkSoft, fontFamily: "var(--font-mono)" }}>
                           {isLow ? "LOW · " : ""}{available}/{it.qty} {it.unit}
                         </span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 11, color: C.inkSoft }}>{it.type}{it.checkedOut > 0 ? ` · ${it.checkedOut} checked out` : ""}</span>
+                        <span style={{ fontSize: 12, color: C.inkSoft }}>{it.type}{it.checkedOut > 0 ? ` · ${it.checkedOut} checked out` : ""}</span>
                         <div style={{ display: "flex", gap: 4 }}>
                           <button onClick={() => adjustCheckout(it.id, -1)} disabled={it.checkedOut <= 0} title="Check in"
                             style={{ border: `1px solid ${C.line}`, background: "transparent", borderRadius: 5, padding: "3px 6px", cursor: it.checkedOut <= 0 ? "not-allowed" : "pointer", color: C.inkSoft }}>
@@ -300,7 +306,7 @@ export default function VolunteerDashboard() {
             </div>
 
             <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 8, overflow: "hidden" }}>
-              <div style={{ background: C.tealLight, color: C.tealDark, padding: "10px 14px", display: "flex", alignItems: "center", gap: 6, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13 }}>
+              <div style={{ background: C.tealLight, color: C.tealDark, padding: "10px 14px", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13 }}>
                 <Users size={14} /> Volunteer shift roster
               </div>
               <div>
@@ -311,14 +317,14 @@ export default function VolunteerDashboard() {
                         {v.teamLead && <Star size={12} color={C.kraftDark} fill={C.kraftDark} />}
                         {v.name}
                       </div>
-                      <div style={{ fontSize: 11, color: C.inkSoft }}>{v.role} · {v.eventName}</div>
+                      <div style={{ fontSize: 12, color: C.inkSoft }}>{v.role} · {v.eventName}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 11, color: C.inkSoft, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}>
+                      <div style={{ fontSize: 12, color: C.inkSoft, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}>
                         <Clock size={11} /> {v.shift}
                       </div>
                       <span style={{
-                        fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
+                        fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
                         color: v.status === "active" ? C.teal : C.inkSoft,
                       }}>
                         {v.status === "active" ? "Active now" : "Upcoming"}
@@ -333,12 +339,12 @@ export default function VolunteerDashboard() {
           {/* Incident logs */}
           <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 8, overflow: "hidden", marginBottom: 24 }}>
             <div style={{ background: C.ink, color: C.paper, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13 }}>
                 <AlertTriangle size={14} color={C.stamp} /> Incident logs
               </div>
               <button
                 onClick={() => setShowIncidentForm((s) => !s)}
-                style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: `1px solid ${C.kraft}`, color: C.paper, borderRadius: 5, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}
+                style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: `1px solid ${C.kraft}`, color: C.paper, borderRadius: 5, padding: "4px 8px", fontSize: 12, cursor: "pointer" }}
               >
                 <Plus size={12} /> Log incident
               </button>
@@ -375,10 +381,10 @@ export default function VolunteerDashboard() {
                   <div style={{ fontSize: 13, fontWeight: 600, textDecoration: inc.status === "resolved" ? "line-through" : "none", color: inc.status === "resolved" ? C.inkSoft : C.ink }}>
                     {inc.title}
                   </div>
-                  <div style={{ fontSize: 11, color: C.inkSoft }}>{inc.severity}{inc.eventName ? ` · ${inc.eventName}` : ""}</div>
+                  <div style={{ fontSize: 12, color: C.inkSoft }}>{inc.severity}{inc.eventName ? ` · ${inc.eventName}` : ""}</div>
                 </div>
                 <span style={{
-                  fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, padding: "3px 8px", borderRadius: 4,
+                  fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, padding: "3px 8px", borderRadius: 4,
                   background: inc.status === "open" ? "#F6E3DB" : C.tealLight,
                   color: inc.status === "open" ? C.stamp : C.tealDark,
                 }}>
@@ -388,7 +394,7 @@ export default function VolunteerDashboard() {
             ))}
           </div>
 
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: C.inkSoft }}>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14, color: C.inkSoft }}>
             Active events progress
           </div>
 
@@ -412,7 +418,7 @@ export default function VolunteerDashboard() {
                   }}
                 >
                   {complete && <StampBadge text="DONE" rotate={-8} />}
-                  <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
                     {ev.templateName}
                   </div>
                   <div style={{ display: "flex", gap: 14, fontSize: 12, color: C.inkSoft, marginBottom: 12 }}>
@@ -422,7 +428,7 @@ export default function VolunteerDashboard() {
 
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.inkSoft, marginBottom: 4 }}>
                     <span>Overall progress</span>
-                    <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{p.percent}%</span>
+                    <span style={{ fontFamily: "var(--font-mono)" }}>{p.percent}%</span>
                   </div>
                   <ProgressBar percent={p.percent} color={C.teal} C={C} />
 
@@ -449,10 +455,10 @@ export default function VolunteerDashboard() {
 
           <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: 22, position: "relative", marginBottom: 20 }}>
             <StampBadge />
-            <div style={{ fontSize: 11, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'IBM Plex Mono', monospace" }}>
+            <div style={{ fontSize: 12, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "var(--font-mono)" }}>
               Event Operation Details
             </div>
-            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, margin: "4px 0 8px" }}>
+            <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, margin: "4px 0 8px" }}>
               {activeEvent.templateName}
             </div>
             <div style={{ display: "flex", gap: 18, fontSize: 13, color: C.inkSoft }}>
@@ -493,8 +499,8 @@ function StatCard({ label, value, sub, color, icon, C }) {
       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.inkSoft, marginBottom: 6 }}>
         <span style={{ color }}>{icon}</span> {label}
       </div>
-      <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 26, color: C.ink }}>{value}</div>
-      <div style={{ fontSize: 11, color: C.inkSoft, marginTop: 2 }}>{sub}</div>
+      <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 26, color: C.ink }}>{value}</div>
+      <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 2 }}>{sub}</div>
     </div>
   );
 }
@@ -511,9 +517,9 @@ function MiniBar({ label, icon, done, total, color, C }) {
   const percent = total ? Math.round((done / total) * 100) : 0;
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: C.inkSoft, marginBottom: 3 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, color: C.inkSoft, marginBottom: 3 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>{icon} {label}</span>
-        <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{done}/{total}</span>
+        <span style={{ fontFamily: "var(--font-mono)" }}>{done}/{total}</span>
       </div>
       <ProgressBar percent={percent} color={color} C={C} />
     </div>
@@ -525,10 +531,10 @@ function ChecklistCard({ title, icon, items, doneKey, onToggle, C }) {
   return (
     <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 8, overflow: "hidden" }}>
       <div style={{ background: C.tealLight, color: C.tealDark, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", fontSize: 13 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, fontFamily: "var(--font-display)", fontSize: 13 }}>
           {icon} {title}
         </div>
-        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>{doneCount}/{items.length}</div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{doneCount}/{items.length}</div>
       </div>
       <div style={{ padding: "6px 0" }}>
         {items.length === 0 && (

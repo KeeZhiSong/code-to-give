@@ -52,6 +52,10 @@ export default function BeneficiariesPage() {
   const [pickerFor, setPickerFor] = useState(null);
   const [pick, setPick] = useState("");
   const [busyPhone, setBusyPhone] = useState("");
+  // Who just crossed the VIP threshold on THIS click. Only set from the
+  // server's justBecameVip, so it fires on the attendance that actually
+  // unlocked the pass — never on a reload of someone who was already VIP.
+  const [justVip, setJustVip] = useState(null);
 
   const load = useCallback(
     () =>
@@ -107,6 +111,12 @@ export default function BeneficiariesPage() {
       setPickerFor(null);
       setPick("");
       await load();
+      if (!undo && data.loyalty?.justBecameVip) {
+        setJustVip(person.id);
+        // Long enough to be seen, short enough that it isn't still playing
+        // when the organiser moves to the next person in the queue.
+        setTimeout(() => setJustVip(null), 2000);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -248,7 +258,7 @@ export default function BeneficiariesPage() {
       )}
 
       {showForm && (
-        <section className="card">
+        <section className="card enter">
           <h2>{editingId ? "Edit beneficiary" : "Add beneficiary"}</h2>
           <form onSubmit={save}>
             <div className="fields">
@@ -402,7 +412,13 @@ export default function BeneficiariesPage() {
               <div className="between">
                 <span className="nm">
                   <strong>{p.name || "—"}</strong>
-                  {p.vipStatus && <span className="tag pts">⭐ VIP Pass</span>}
+                  {p.vipStatus && (
+                    <span
+                      className={`tag pts${justVip === p.id ? " vip-new" : ""}`}
+                    >
+                      ⭐ VIP Pass
+                    </span>
+                  )}
                   <span className="sub">
                     {[
                       maskPhone(p.phone),
@@ -433,7 +449,7 @@ export default function BeneficiariesPage() {
               </div>
 
               {pickerFor === p.id && (
-                <div className="row" style={{ marginTop: 8, flexWrap: "wrap" }}>
+                <div className="row picker" style={{ marginTop: 8, flexWrap: "wrap" }}>
                   <select
                     value={pick}
                     onChange={(e) => setPick(e.target.value)}

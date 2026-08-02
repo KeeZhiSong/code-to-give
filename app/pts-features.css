@@ -52,30 +52,33 @@
 }
 
 :root {
-  --pf-font-display: 'Big Shoulders Display', system-ui, sans-serif;
-  --pf-font-body: 'Public Sans', system-ui, -apple-system, sans-serif;
-  --pf-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Aliases, not values. The palette lives in globals.css :root — these
+     components render inside console pages, so a second set of literal
+     colours here is what made two visual worlds collide in one viewport. */
+  --pf-font-display: var(--font-display);
+  --pf-font-body: var(--font-sans);
+  --pf-font-mono: var(--font-mono);
 
-  --pf-bg: #F1EEE3;
-  --pf-bg-raised: #FAF8F0;
-  --pf-bg-sunken: #E6E1D0;
-  --pf-text: #16302A;
-  --pf-text-muted: #4B655F;
-  --pf-border: rgba(22, 48, 42, 0.16);
-  --pf-border-strong: rgba(22, 48, 42, 0.32);
+  --pf-bg: var(--bg);
+  --pf-bg-raised: var(--card);
+  --pf-bg-sunken: var(--sunken);
+  --pf-text: var(--ink);
+  --pf-text-muted: var(--muted);
+  --pf-border: var(--line);
+  --pf-border-strong: var(--line-strong);
 
-  --pf-accent: #C97A1E;
-  --pf-accent-fill: #DD8A24;
-  --pf-accent-tint: #F6E3C2;
-  --pf-accent-contrast: #22160A;
+  --pf-accent: var(--accent-text);
+  --pf-accent-fill: var(--accent);
+  --pf-accent-tint: var(--accent-tint);
+  --pf-accent-contrast: var(--accent-ink);
 
-  --pf-good: #2F6B4C;
-  --pf-good-tint: #DCEBE1;
-  --pf-critical: #A5352A;
-  --pf-critical-tint: #F5DEDA;
+  --pf-good: var(--yes);
+  --pf-good-tint: var(--yes-tint);
+  --pf-critical: var(--no);
+  --pf-critical-tint: var(--no-tint);
 
   --pf-radius: 6px;
-  --pf-radius-lg: 10px;
+  --pf-radius-lg: var(--radius);
   --pf-shadow: 0 1px 2px rgba(22, 48, 42, 0.06), 0 1px 0 rgba(22, 48, 42, 0.04);
 }
 
