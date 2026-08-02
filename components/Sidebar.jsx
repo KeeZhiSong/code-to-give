@@ -21,8 +21,12 @@ const NAV = [
 export default function Sidebar() {
   const pathname = usePathname();
 
-  // The public headcount page stands alone.
-  if (pathname.startsWith("/share")) return null;
+  // The public headcount page stands alone, and so does the landing page —
+  // someone arriving cold is deciding whether to look, not navigating a
+  // console they already use.
+  if (pathname.startsWith("/share") || pathname.startsWith("/welcome")) {
+    return null;
+  }
 
   return (
     <nav className="sidebar" aria-label="Main">

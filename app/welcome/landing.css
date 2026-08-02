@@ -1,0 +1,211 @@
+/* Landing page only.
+   Reads the same tokens as the console (globals.css :root) so this can never
+   become a fifth visual world — but spends them differently. Persuade earns
+   room and scale that Operate doesn't. */
+
+.lp {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 24px 100px;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────────────── */
+.lp-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 0;
+}
+.lp-wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+.lp-nav-cta {
+  margin-left: auto;
+  font-size: var(--t-body);
+  font-weight: 550;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 9px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+.lp-nav-cta:hover { background: var(--card); }
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.lp-hero { padding: 76px 0 96px; }
+.lp-hero h1 {
+  font-family: var(--font-display);
+  /* Fluid so the line breaks the author intended survive a phone. */
+  font-size: clamp(34px, 6.2vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 28px;
+}
+.lp-hero h1 em {
+  font-style: normal;
+  color: var(--accent-text);
+}
+/* The problem gets struck through rather than described — the page's one
+   piece of wordplay, and it saves a sentence. */
+.lp-strike {
+  position: relative;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lp-strike::after {
+  content: "";
+  position: absolute;
+  left: -1%;
+  right: -1%;
+  top: 52%;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: strike 620ms var(--ease-out) 340ms forwards;
+}
+@keyframes strike { to { transform: scaleX(1); } }
+
+.lp-lede {
+  font-size: clamp(17px, 2.2vw, 21px);
+  line-height: 1.55;
+  color: var(--muted);
+  /* Measure, not container width — long lines are where a hero loses people. */
+  max-width: 60ch;
+  margin: 0 0 36px;
+}
+
+.lp-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.lp-cta {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 650;
+  font-size: 17px;
+  padding: 14px 28px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform var(--press) var(--ease-out), filter var(--press) ease;
+}
+.lp-cta:hover { filter: brightness(1.06); }
+.lp-cta:active { transform: scale(0.985); }
+.lp-actions-note { color: var(--muted); font-size: var(--t-body); }
+
+/* ── Problem ─────────────────────────────────────────────────────────────── */
+.lp-problem { padding: 40px 0 90px; }
+.lp-scatter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 34px;
+}
+.lp-scatter span {
+  font-size: var(--t-body);
+  color: var(--muted);
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+  padding: 7px 15px;
+}
+.lp-problem h2 {
+  font-size: clamp(24px, 3.6vw, 36px);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  max-width: 24ch;
+  margin: 0 0 20px;
+}
+.lp-problem p {
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 58ch;
+  margin: 0;
+}
+
+/* ── Convergence ─────────────────────────────────────────────────────────
+   The canvas draws itself on a clock (see ConvergenceCanvas.jsx); all this
+   needs to do is give it a box. Height is fixed rather than aspect-based so
+   the composition doesn't get squashed on a narrow phone. */
+.lp-converge { padding: 20px 0 90px; }
+.lp-canvas {
+  display: block;
+  width: 100%;
+  height: 420px;
+}
+.lp-caption {
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--t-body);
+  max-width: 52ch;
+  margin: 8px auto 0;
+}
+
+/* ── Thesis ──────────────────────────────────────────────────────────────── */
+.lp-thesis {
+  padding: 60px 0 90px;
+  border-top: 1px solid var(--line);
+}
+.lp-thesis h2 {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 5.4vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 24px;
+}
+.lp-thesis p {
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.62;
+  color: var(--muted);
+  max-width: 58ch;
+  margin: 0;
+}
+
+/* ── Impact ──────────────────────────────────────────────────────────────── */
+.lp-impact { padding: 60px 0 40px; border-top: 1px solid var(--line); }
+.lp-impact h2 {
+  font-size: var(--t-sub);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 28px;
+}
+.lp-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 28px;
+}
+.lp-n {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 50px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+}
+.lp-l { font-size: var(--t-body); color: var(--muted); margin-top: 6px; }
+.lp-source {
+  font-size: var(--t-micro);
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  max-width: 62ch;
+  margin: 34px 0 0;
+}
+
+/* ── Foot ────────────────────────────────────────────────────────────────── */
+.lp-foot { padding: 56px 0 0; border-top: 1px solid var(--line); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-strike::after { animation: none; transform: scaleX(1); }
+  .lp-cta:active { transform: none; }
+}
+
+@media (max-width: 620px) {
+  .lp-canvas { height: 330px; }
+}
