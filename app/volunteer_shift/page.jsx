@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+// Shift coverage — who's on each shift, and who backs them up.
+//
+// Reads and writes go through /api/shifts, not a Supabase client in the
+// browser. The service_role key stays on the server, and promoting a standby
+// is decided there too, so the page can't nominate whoever it likes.
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 
 const STATUS_RANK = { ok: 0, triggered: 1, covered: 2, open: 3 };
 
@@ -161,21 +161,25 @@ export default function VolunteerShiftCoverage() {
   const [logsOpen, setLogsOpen] = useState({});
   const [working, setWorking] = useState({});
 
-  // 1. Fetch live shifts from Supabase
+  const [error, setError] = useState("");
+
+  // The API already returns the shape this page wants — the primary_volunteer
+  // column is renamed server-side in lib/shifts.js.
   const fetchShifts = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('shifts').select('*').order('date', { ascending: true });
-    if (error) {
-      console.error("Error fetching shifts:", error);
-    } else {
-      // Map Supabase snake_case columns to app format
-      const formatted = data.map(s => ({
-        ...s,
-        primary: s.primary_volunteer
-      }));
-      setShifts(formatted);
+    try {
+      const res = await fetch("/api/shifts");
+      const data = await res.json();
+      if (data.error) setError(data.error);
+      else {
+        setError("");
+        setShifts(data.shifts || []);
+      }
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -207,58 +211,69 @@ export default function VolunteerShiftCoverage() {
     setLogs((prev) => ({ ...prev, [id]: [...(prev[id] || []), { text, cls }] }));
   }, []);
 
-  // 2. Perform cancellation and write update directly to Supabase
-  const simulateCancellation = useCallback(async (id) => {
-    const s = shiftsRef.current.find((x) => x.id === id);
-    if (!s || !s.primary) return;
+  /**
+   * The primary volunteer has dropped out — hand the shift to the first
+   * standby.
+   *
+   * The server decides who that is and returns what it actually wrote, so the
+   * log below reports the outcome rather than predicting it. The pauses
+   * between lines are pacing for a watching organiser, not work being done.
+   */
+  const simulateCancellation = useCallback(
+    async (id) => {
+      const s = shiftsRef.current.find((x) => x.id === id);
+      if (!s || !s.primary) return;
 
-    setLogsOpen((prev) => ({ ...prev, [id]: true }));
-    setWorking((prev) => ({ ...prev, [id]: true }));
-    const cancelledName = s.primary;
-    const standbyQueue = s.standby || [];
+      setLogsOpen((prev) => ({ ...prev, [id]: true }));
+      setWorking((prev) => ({ ...prev, [id]: true }));
 
-    await delay(100);
-    appendLog(id, `✕ ${cancelledName} cancelled — shift now unstaffed`, null);
-
-    if (standbyQueue.length) {
-      setShifts((prev) => prev.map((x) => (x.id === id ? { ...x, status: "triggered" } : x)));
-      await delay(500);
-      const next = standbyQueue[0];
-      appendLog(id, `→ system auto-notifying next in queue: ${next}...`, null);
-      await delay(700);
-      appendLog(id, `✓ ${next} confirmed — accepting shift`, "sc-ok-line");
-
-      const remaining = standbyQueue.slice(1);
-
-      // --- PERSIST TO SUPABASE ---
-      await supabase
-        .from('shifts')
-        .update({ primary_volunteer: next, standby: remaining, status: 'covered' })
-        .eq('id', id);
-
-      setShifts((prev) => prev.map((x) => (x.id === id ? { ...x, primary: next, standby: remaining, status: "covered" } : x)));
-      setWorking((prev) => ({ ...prev, [id]: false }));
-      await delay(400);
-      if (remaining.length) {
-        appendLog(id, `→ shift reassigned in DB. ${next} is now primary. ${remaining.length} more standby${remaining.length > 1 ? "s" : ""} still on call.`, null);
-      } else {
-        appendLog(id, `→ shift reassigned in DB. ${next} is now primary. Standby queue is now empty.`, null);
+      await delay(100);
+      appendLog(id, `✕ ${s.primary} cancelled — shift now unstaffed`, null);
+      if ((s.standby || []).length) {
+        setShifts((prev) =>
+          prev.map((x) => (x.id === id ? { ...x, status: "triggered" } : x))
+        );
+        await delay(400);
       }
-    } else {
-      // --- PERSIST UNFILLED TO SUPABASE ---
-      await supabase
-        .from('shifts')
-        .update({ primary_volunteer: null, status: 'open' })
-        .eq('id', id);
 
-      setShifts((prev) => prev.map((x) => (x.id === id ? { ...x, primary: null, status: "open" } : x)));
+      let result;
+      try {
+        const res = await fetch(`/api/shifts/${id}/cover`, { method: "POST" });
+        result = await res.json();
+        if (result.error) throw new Error(result.error);
+      } catch (e) {
+        appendLog(id, `⚠ couldn't reassign: ${e.message}`, "sc-warn-line");
+        setWorking((prev) => ({ ...prev, [id]: false }));
+        // Put the row back the way the server still has it.
+        await fetchShifts();
+        return;
+      }
+
+      const { shift, promoted, remaining } = result;
+      setShifts((prev) => prev.map((x) => (x.id === shift.id ? shift : x)));
       setWorking((prev) => ({ ...prev, [id]: false }));
-      await delay(500);
-      appendLog(id, `⚠ standby queue exhausted — shift is unfilled`, "sc-warn-line");
-      await delay(400);
-      appendLog(id, `→ organizer notified to source emergency coverage`, null);
-    }
-  }, [appendLog]);
+
+      if (promoted) {
+        appendLog(id, `→ next in queue: ${promoted}…`, null);
+        await delay(500);
+        appendLog(id, `✓ ${promoted} is now primary`, "sc-ok-line");
+        await delay(300);
+        appendLog(
+          id,
+          remaining.length
+            ? `→ shift reassigned. ${remaining.length} more standby${remaining.length > 1 ? "s" : ""} still on call.`
+            : "→ shift reassigned. Standby queue is now empty.",
+          null
+        );
+      } else {
+        await delay(300);
+        appendLog(id, "⚠ standby queue exhausted — shift is unfilled", "sc-warn-line");
+        await delay(300);
+        appendLog(id, "→ needs emergency coverage", null);
+      }
+    },
+    [appendLog, fetchShifts]
+  );
 
   function toggleSelect(id) {
     setSelected((prev) => {
@@ -426,8 +441,14 @@ export default function VolunteerShiftCoverage() {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
-                  <tr><td colSpan={8} className="sc-empty-state">Loading shifts from Supabase...</td></tr>
+                {error ? (
+                  <tr>
+                    <td colSpan={8} className="sc-empty-state" style={{ color: "var(--red)" }}>
+                      Couldn&apos;t load shifts — {error}
+                    </td>
+                  </tr>
+                ) : loading ? (
+                  <tr><td colSpan={8} className="sc-empty-state">Loading shifts…</td></tr>
                 ) : visibleShifts.length === 0 ? (
                   <tr><td colSpan={8} className="sc-empty-state">No shifts match the current filters.</td></tr>
                 ) : (

@@ -15,6 +15,7 @@ const NAV = [
   { href: "/beneficiaries", label: "Beneficiaries", hint: "Who we serve" },
   { href: "/dispatch", label: "Templates", hint: "Reuse a past event" },
   { href: "/operations", label: "Operations", hint: "On-the-day logistics" },
+  { href: "/volunteer_shift", label: "Shifts", hint: "Coverage and standbys" },
 ];
 
 export default function Sidebar() {
