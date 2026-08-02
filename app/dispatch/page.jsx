@@ -479,6 +479,30 @@ export default function EventDispatchBoard() {
     if (loaded) persist(templates, events);
   }, [templates, events, loaded, persist]);
 
+  /**
+   * Put back any built-in template that's been deleted.
+   *
+   * Templates live in code but are overridden by whatever is in this browser's
+   * localStorage, so deleting one removes it for you and nobody else — and
+   * there was no way back short of clearing the whole store, which would also
+   * throw away every template and cloned event you'd made since.
+   *
+   * Matches on name and only ADDS what's missing, so anything you've edited
+   * keeps your edits rather than being reverted underneath you.
+   */
+  function restoreDefaults() {
+    setTemplates((current) => {
+      const have = new Set(current.map((t) => t.name));
+      const missing = SEED_TEMPLATES.filter((t) => !have.has(t.name));
+      if (missing.length === 0) return current;
+      return [...current, ...missing];
+    });
+  }
+
+  const missingCount = SEED_TEMPLATES.filter(
+    (t) => !templates.some((x) => x.name === t.name)
+  ).length;
+
   // ---------- derived ----------
   const activeTemplate = templates.find((t) => t.id === activeTemplateId);
   const activeEvent = events.find((e) => e.id === activeEventId);
@@ -686,7 +710,21 @@ export default function EventDispatchBoard() {
       {/* ---------------- GALLERY ---------------- */}
       {view === "gallery" && (
         <div style={{ padding: "28px" }}>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 18 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginBottom: 18 }}>
+            {missingCount > 0 && (
+              <button
+                onClick={restoreDefaults}
+                title="Add back built-in templates that have been deleted"
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, background: "transparent",
+                  color: C.ink, border: `1px solid ${C.line}`, borderRadius: 6,
+                  padding: "8px 14px", fontWeight: 600, cursor: "pointer",
+                  fontFamily: "var(--font-sans)", fontSize: 13,
+                }}
+              >
+                Restore {missingCount} built-in template{missingCount === 1 ? "" : "s"}
+              </button>
+            )}
             <button
               onClick={() => setView("newTemplate")}
               style={{
