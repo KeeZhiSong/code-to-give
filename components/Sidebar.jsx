@@ -27,8 +27,15 @@ export default function Sidebar() {
   return (
     <nav className="sidebar" aria-label="Main">
       <Link href="/" className="sb-brand">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="" width={30} height={30} />
+        {/* The source PNG has an opaque white background baked in, not
+            transparency — clipping it to a circle cut into the artwork and
+            left a mismatched edge on the navy sidebar. A real white badge
+            behind it reads as intentional instead of a rendering glitch,
+            and gives the fine cursive linework room to actually resolve. */}
+        <span className="sb-logo-badge">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" width={34} height={34} />
+        </span>
         <span>Passion To Serve</span>
       </Link>
 

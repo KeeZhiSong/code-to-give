@@ -9,6 +9,39 @@ const DIMENSIONS = [
   { key: "partners", label: "Logistics partners confirmed" },
 ];
 
+const RING_SIZE = 116;
+const RING_STROKE = 9;
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+// The score AS a ring, not a number beside a decoration — same "graphic
+// carries the data" rule as the Events index cards (DESIGN.md), scaled up
+// since this is the one figure this whole panel exists to show.
+function ReadinessRing({ pct, onTrack }) {
+  const offset = RING_CIRCUMFERENCE * (1 - pct / 100);
+  const color = onTrack ? "var(--pf-good)" : "var(--pf-critical)";
+  return (
+    <div className="pf-readiness-ring" role="img" aria-label={`${pct}% ready`}>
+      <svg width={RING_SIZE} height={RING_SIZE} viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}>
+        <circle
+          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RING_RADIUS}
+          fill="none" stroke="var(--pf-bg-sunken)" strokeWidth={RING_STROKE}
+        />
+        <circle
+          cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RING_RADIUS}
+          fill="none" stroke={color} strokeWidth={RING_STROKE} strokeLinecap="round"
+          strokeDasharray={RING_CIRCUMFERENCE} strokeDashoffset={offset}
+          transform={`rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})`}
+        />
+      </svg>
+      <span className="pf-score-figure pf-tabular">
+        {pct}
+        <span className="pf-of">%</span>
+      </span>
+    </div>
+  );
+}
+
 /**
  * Event Readiness Score — one number from three inputs that already live
  * elsewhere (headcount, task board, logistics partners), plus a concrete
@@ -48,10 +81,7 @@ export default function ReadinessScore({ eventId }) {
       </div>
 
       <div className="pf-score-row">
-        <div className="pf-score-figure pf-tabular">
-          {data.score}
-          <span className="pf-of">%</span>
-        </div>
+        <ReadinessRing pct={Math.max(0, Math.min(100, data.score))} onTrack={onTrack} />
         <div className="pf-breakdown">
           {DIMENSIONS.map((d) => (
             <div className="pf-breakdown-row" key={d.key}>
@@ -59,7 +89,7 @@ export default function ReadinessScore({ eventId }) {
               <div className="pf-bar-track">
                 <div
                   className={`pf-bar-fill ${data.breakdown[d.key] >= 80 ? "pf-good" : "pf-critical"}`}
-                  style={{ width: `${data.breakdown[d.key]}%` }}
+                  style={{ transform: `scaleX(${data.breakdown[d.key] / 100})` }}
                   role="progressbar"
                   aria-valuenow={data.breakdown[d.key]}
                   aria-valuemin={0}

@@ -1,64 +1,58 @@
-/* ─── The one palette ────────────────────────────────────────────────────────
-   Everything in the app reads from here: this file, the .pf-* feature styles,
-   and the shift board. There used to be three separate worlds — a cool grey
-   console, a warm cream dashboard, and a dark terminal — and because the
-   .pf-* components render INSIDE console pages, two of them collided in the
-   same viewport rather than merely on different screens.
+@import "tailwindcss";
 
-   Warm cream over cool grey because the product's voice, already set by the
-   WhatsApp copy, is warm and plain-spoken, and because a charity's console
-   shouldn't look like every B2B SaaS dashboard.                              */
+/* Passion To Serve — design system. See DESIGN.md for the full spec and the
+   reasoning behind each token: navy ink from PTS's own brand, teal as the
+   single interactive accent, warm ivory instead of clinical white, gold
+   locked to VIP/Gold-tier and nowhere else. */
 :root {
-  --bg: #f1eee3;          /* warm cream */
-  --card: #faf8f0;        /* raised surface */
-  --sunken: #e6e1d0;
-  --ink: #16302a;         /* deep green-black */
-  /* 5.4:1 on --bg. Secondary text runs at 12–15px and gets read on a phone at
-     an outdoor distribution queue, where a borderline value goes first. */
-  --muted: #4b655f;
-  --line: rgba(22, 48, 42, 0.16);
-  --line-strong: rgba(22, 48, 42, 0.32);
-  --accent: #c97a1e;
-  /* Near-black ON amber, never white: white on #c97a1e is about 3:1, which
-     fails AA for button text. The dark ink clears 6.9:1. */
-  --accent-ink: #22160a;
-  --accent-tint: #f6e3c2;
-  /* The bright amber is a FILL colour. As text on cream it is 3.1:1, which
-     fails AA — so anything that renders amber as type uses this darker cut
-     (5.3:1) instead. Same hue, legible. */
-  --accent-text: #8f5d16;
-  --yes: #2f6b4c;
-  --yes-tint: #dcebe1;
-  --no: #a5352a;
-  --no-tint: #f5deda;
+  --bg: #FAF7F0;
+  --card: #FFFFFA;
+  --ink: #0E2A3B;
+  --muted: #56707D;
+  --line: #E2DDCF;
+  --accent: #1C6B5E;
+  --accent-ink: #FAF7F0;
+  --yes: #4F7A5B;
+  --no: #8B4B3E;
+  --pending: #A67C43;
+  --gold: #C9A24B;
+  --gold-ink: #0E2A3B;
   --radius: 10px;
-
-  /* Faces are embedded as base64 in pts-features.css — self-hosted, no
-     network request, no flash of unstyled text, and nothing for a build to
-     fetch. Public Sans is a legibility-first face that isn't part of the
-     current Inter/Geist monoculture. */
-  --font-sans: "Public Sans", system-ui, -apple-system, sans-serif;
-  --font-display: "Big Shoulders Display", var(--font-sans);
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
-
-  /* Type scale.
-     Was 11.5 / 12 / 13 / 14 / 15 / 22 — six sizes inside a 1.9:1 range, so
-     nothing led the eye and every screen read as one flat block of text. This
-     is five steps at ~1.26 each, which is a real hierarchy you can scan.
-     De-emphasis is carried by COLOUR, not by another size: the old set shaded
-     three near-identical greys, which is what made the flatness.  */
-  --t-micro: 12px;   /* tags, hints, timestamps */
-  --t-body: 15px;    /* everything you actually read */
-  --t-sub: 19px;     /* section and card headings */
-  --t-title: 24px;   /* page title */
-  --t-metric: 34px;  /* the counts — the one number on screen that shouts */
-
-  /* Motion. Deliberately two tokens and no more: this is an operations
-     console, and the counts, filters and navigation are all left still on
-     purpose — data an organiser is reading to make a decision must not move
-     for style. */
+  --radius-sm: 6px;
+  --hover-tint: rgb(from var(--ink) r g b / 6%);
+  /* Motion — two tokens, everywhere. Short durations: this is a tool used
+     dozens of times a day, not a one-time impression (DESIGN.md: Motion). */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --press: 100ms;
+
+  --font-display: var(--font-display), Georgia, "Iowan Old Style", serif;
+  --font-body: var(--font-body), -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-mono), Consolas, "SF Mono", monospace;
+
+  /* Type ramp — see DESIGN.md Typography. Every font-size in this file is
+     one of these five; a literal size elsewhere is drift, not a choice. */
+  --text-label: 11px;   /* uppercase eyebrows, tags, tiny row actions */
+  --text-sm: 13px;      /* secondary copy, mono inline data */
+  --text-base: 15px;    /* body default */
+  --text-figure: 28px;  /* large standalone mono counts */
+  --text-figure-hero: 44px; /* the one number a whole screen exists to show (readiness score) */
+  --text-display: clamp(1.375rem, 2.4vw, 1.75rem); /* page/section titles */
+  --text-hero: clamp(2rem, 5vw, 3.25rem); /* the Events index front door — nowhere else */
+}
+
+@theme {
+  --color-navy: #0E2A3B;
+  --color-teal: #1C6B5E;
+  --color-ivory: #FAF7F0;
+  --color-gold: #C9A24B;
+  --color-card: #FFFFFA;
+  --color-line: #E2DDCF;
+  --color-status-confirmed: #4F7A5B;
+  --color-status-pending: #A67C43;
+  --color-status-withdrawn: #8B4B3E;
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 * { box-sizing: border-box; }
@@ -67,8 +61,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: var(--t-body)/1.5 var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+  font: 15px/1.55 var(--font-body);
 }
 
 /* Every interactive control gets a visible keyboard focus ring. Inputs and
@@ -77,18 +70,20 @@ body {
 :where(button, a, [role="button"]):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
+
+h1, h2, h3 { text-wrap: balance; }
 
 .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
 
 header.top { margin-bottom: 24px; display: flex; align-items: center; gap: 14px; }
 header.top .logo { width: 44px; height: 44px; object-fit: contain; flex: none; }
 header.top h1 {
-  margin: 0; font-size: var(--t-title); letter-spacing: -0.02em;
-  font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+  margin: 0; font-family: var(--font-display); font-size: var(--text-display);
+  font-weight: 600; letter-spacing: -0.01em;
 }
-header.top p { margin: 4px 0 0; color: var(--muted); font-size: var(--t-body); }
+header.top p { margin: 4px 0 0; color: var(--muted); font-size: var(--text-sm); }
 
 .grid {
   display: grid;
@@ -107,37 +102,56 @@ header.top p { margin: 4px 0 0; color: var(--muted); font-size: var(--t-body); }
 }
 .card h2 {
   margin: 0 0 14px;
-  font-size: var(--t-sub);
-  letter-spacing: -0.01em;
-  color: var(--ink);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
   font-weight: 600;
 }
 
 .row { display: flex; align-items: center; gap: 10px; }
 .between { display: flex; align-items: center; justify-content: space-between; }
 
-/* Was a fixed 260px. A scroll region nested inside a scrolling page is a trap
-   on a phone, and on the broadcast screen it hid most of the recipient list
-   behind an inner scrollbar — at exactly the moment you want someone to see
-   who the message is going to. Tall enough now to show a real list, still
-   capped so the page doesn't run away. */
-.list { max-height: 60vh; overflow-y: auto; margin: 0 -6px; }
+.list { max-height: 260px; overflow-y: auto; margin: 0 -6px; }
 .person {
   display: flex; align-items: center; gap: 10px;
-  padding: 7px 6px; border-radius: 6px; cursor: pointer;
+  padding: 7px 6px; border-radius: var(--radius-sm); cursor: pointer;
 }
-.person:hover { background: var(--sunken); }
+.person:hover { background: var(--hover-tint); }
 .person .nm { flex: 1; }
-.person .ph { color: var(--muted); font-variant-numeric: tabular-nums; font-size: var(--t-micro); }
+.person .ph {
+  color: var(--muted); font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono); font-size: var(--text-sm);
+}
 .person.out { opacity: 0.45; }
 /* Profile line under a name — pillars + preferred role, from the Form. */
-.person .sub { display: block; color: var(--muted); font-size: var(--t-micro); letter-spacing: 0.01em; }
+.person .sub { display: block; color: var(--muted); font-size: var(--text-sm); }
+
+/* Monogram avatar — turns a bare name into something a list reads faster,
+   without a photo library to source or store. Consistent teal tint everywhere
+   (not per-person hue) so it stays inside the One Accent Rule. */
+.avatar {
+  display: flex; align-items: center; justify-content: center; flex: none;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgb(from var(--accent) r g b / 14%); color: var(--accent);
+  font-family: var(--font-mono); font-weight: 700; font-size: var(--text-label);
+}
+.avatar.lg { width: 40px; height: 40px; font-size: var(--text-sm); }
 
 select {
-  font: inherit; padding: 7px 10px; border-radius: 8px;
+  font: inherit; padding: 7px 10px; border-radius: var(--radius-sm);
   border: 1px solid var(--line); background: var(--card); color: inherit; cursor: pointer;
 }
 select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+/* Groups a long form into scannable sections instead of one undifferentiated
+   wall of fields — each label is a small landmark, not a heading fighting the
+   page title for attention. */
+.form-section-label {
+  font-size: var(--text-label); text-transform: uppercase; letter-spacing: 0.06em;
+  font-weight: 600; color: var(--accent); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
 
 /* Event form — auto-fitting columns so it stays readable on a phone. */
 .fields {
@@ -149,62 +163,68 @@ select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .fields label span, form > label span { display: block; margin-bottom: 4px; }
 input[type="number"], input[type="datetime-local"] {
   width: 100%; padding: 10px 12px; font: inherit;
-  border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: inherit;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--card); color: inherit;
 }
 .fields select { width: 100%; }
 
 .tag {
-  font-size: var(--t-micro); letter-spacing: 0.01em; padding: 2px 8px; border-radius: 999px;
-  background: var(--sunken); color: var(--muted); border: 1px solid var(--line);
+  font-size: var(--text-label); padding: 1px 6px; border-radius: 999px;
+  background: var(--hover-tint); color: var(--muted); border: 1px solid var(--line);
   white-space: nowrap;
 }
 /* Loyalty standing — the signal for "re-invite this one". */
-.tag.pts { background: var(--yes-tint); color: var(--yes); border-color: var(--line); }
+.tag.pts {
+  background: rgb(from var(--yes) r g b / 14%); color: var(--yes);
+  border-color: rgb(from var(--yes) r g b / 35%);
+}
+/* Gold Exclusivity Rule (DESIGN.md): solid gold fill appears in exactly two
+   places — the Gold volunteer tier and the Beneficiary VIP Pass. Nowhere else. */
+.tag.vip, .tag.pts.gold {
+  background: var(--gold); color: var(--gold-ink); border-color: var(--gold);
+  font-weight: 600;
+}
 
 /* Undo affordance inside a tag (an attendance logged by mistake). Sits on the
    tag rather than in a menu: the correction happens right where the error is
    visible. */
 .tag .x {
   all: unset; cursor: pointer; margin-left: 5px; padding: 0 1px;
-  font-size: 12px; line-height: 1; color: var(--muted); opacity: 0.6;
+  font-size: var(--text-label); line-height: 1; color: var(--muted); opacity: 0.6;
 }
 .tag .x:hover { opacity: 1; color: var(--no); }
 .tag .x:disabled { cursor: default; opacity: 0.3; }
-.tag .x:focus-visible { outline: 2px solid var(--line); border-radius: 3px; }
+.tag .x:focus-visible { outline: 2px solid var(--line); border-radius: var(--radius-sm); }
 
 textarea, input[type="text"] {
   width: 100%; padding: 10px 12px; font: inherit;
-  border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: inherit;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--card); color: inherit;
   resize: vertical;
 }
 textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 
 button {
-  font: inherit; font-weight: 550; padding: 9px 16px; border-radius: 8px;
-  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink); cursor: pointer;
+  font: inherit; font-weight: 550; padding: 9px 16px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer;
   transition: transform var(--press) var(--ease-out), background-color var(--press) ease;
 }
-button:hover:not(:disabled) { background: var(--sunken); }
-/* The whole app had no :active state. On a phone at a distribution queue, a
-   tap that acknowledges nothing reads as a control that didn't work. */
+button:hover:not(:disabled) { background: var(--hover-tint); }
+/* No control anywhere had an :active state. On a phone at a distribution
+   queue, a tap that acknowledges nothing reads as a control that didn't work. */
 button:active:not(:disabled) { transform: scale(0.98); }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 button.primary:hover:not(:disabled) { filter: brightness(1.08); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
 .seg button { border: 0; border-radius: 0; padding: 7px 14px; background: var(--card); }
 .seg button.on { background: var(--accent); color: var(--accent-ink); }
 
 .counts { display: flex; gap: 24px; margin-bottom: 14px; }
 .count .n {
-  font-size: var(--t-metric); font-weight: 650; line-height: 1;
-  font-variant-numeric: tabular-nums;
-  /* Optical sizing: the largest thing on screen needs the tightest tracking,
-     or the digits drift apart and stop reading as one number. */
-  letter-spacing: -0.02em;
+  font-family: var(--font-mono); font-size: var(--text-figure); font-weight: 700;
+  line-height: 1; font-variant-numeric: tabular-nums;
 }
-.count .l { font-size: var(--t-micro); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.count .l { font-size: var(--text-sm); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .count.yes .n { color: var(--yes); }
 .count.no .n { color: var(--no); }
 
@@ -225,8 +245,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .rosterline.yes .dot { background: var(--yes); }
 .rosterline.no .dot { background: var(--no); }
 .rosterline .who { flex: 1; }
-.rosterline .when { color: var(--muted); font-size: var(--t-micro); }
-.rosterline button { flex: none; padding: 6px 12px; font-size: var(--t-micro); }
+.rosterline .when { color: var(--muted); font-family: var(--font-mono); font-size: var(--text-sm); }
+.rosterline button { flex: none; padding: 4px 10px; font-size: var(--text-sm); }
 
 /* ─── App shell ──────────────────────────────────────────────────────────── */
 .shell { display: flex; min-height: 100vh; align-items: stretch; }
@@ -234,22 +254,27 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .sidebar {
   width: 208px; flex: none; padding: 20px 12px;
-  background: var(--card); border-right: 1px solid var(--line);
+  background: var(--ink); border-right: 1px solid var(--line);
   position: sticky; top: 0; height: 100vh; overflow-y: auto;
 }
 .sb-brand {
   display: flex; align-items: center; gap: 9px; padding: 0 8px 18px;
-  text-decoration: none; color: var(--ink); font-weight: 650; font-size: 14px;
+  text-decoration: none; color: var(--accent-ink); font-weight: 650; font-size: var(--text-sm);
+}
+.sb-logo-badge {
+  display: flex; align-items: center; justify-content: center; flex: none;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--card);
 }
 .sb-nav { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .sb-nav a {
-  display: block; padding: 9px 10px; border-radius: 8px;
-  text-decoration: none; color: var(--ink);
+  display: block; padding: 9px 10px; border-radius: var(--radius-sm);
+  text-decoration: none; color: var(--accent-ink);
 }
-.sb-nav a:hover { background: var(--sunken); }
+.sb-nav a:hover { background: rgb(from var(--accent-ink) r g b / 10%); }
 .sb-nav a.on { background: var(--accent); color: var(--accent-ink); }
-.sb-label { display: block; font-weight: 550; font-size: var(--t-body); }
-.sb-hint { display: block; font-size: var(--t-micro); color: var(--muted); margin-top: 1px; }
+.sb-label { display: block; font-weight: 550; font-size: var(--text-sm); }
+.sb-hint { display: block; font-size: var(--text-label); color: rgb(from var(--accent-ink) r g b / 70%); margin-top: 1px; }
 .sb-nav a.on .sb-hint { color: var(--accent-ink); opacity: 0.75; }
 
 /* On a phone the sidebar becomes a scrollable strip along the top — an
@@ -267,10 +292,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Back link above a page title — "where am I, and how do I get out". */
 .backlink {
-  display: inline-block; margin-bottom: 10px; font-size: var(--t-body);
+  display: inline-block; margin-bottom: 10px; font-size: var(--text-sm);
   color: var(--muted); text-decoration: none;
 }
-.backlink:hover { color: var(--accent-text); }
+.backlink:hover { color: var(--accent); }
 
 /* ─── Navigation ─────────────────────────────────────────────────────────── */
 .tabs {
@@ -278,82 +303,105 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   border-bottom: 1px solid var(--line); flex-wrap: wrap;
 }
 .tabs a {
+  display: flex; align-items: center; gap: 6px;
   padding: 9px 16px; text-decoration: none; color: var(--muted);
   font-weight: 550; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 120ms ease, border-color 120ms ease;
 }
 .tabs a:hover { color: var(--ink); }
-.tabs a.on { color: var(--accent-text); border-bottom-color: var(--accent); }
+.tabs a.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs a svg { flex: none; }
+@media (prefers-reduced-motion: reduce) { .tabs a { transition: none; } }
 
 /* A link that reads as a button — used for cross-page actions in the header. */
 .btnlink {
-  font-size: var(--t-body); font-weight: 550; padding: 9px 16px; border-radius: 8px;
-  border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+  font-size: var(--text-sm); font-weight: 550; padding: 8px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
   text-decoration: none; white-space: nowrap;
 }
-.btnlink:hover { background: var(--sunken); }
+.btnlink:hover { background: var(--hover-tint); }
 
-/* ─── Events index ───────────────────────────────────────────────────────── */
-.eventlist { list-style: none; margin: 0; padding: 0; }
-.eventrow {
+/* ─── Readiness ring (Events index card) ────────────────────────────────── */
+.readiness-ring {
+  position: relative; width: 56px; height: 56px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.readiness-ring svg circle:last-child { transition: stroke-dashoffset 600ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .readiness-ring svg circle:last-child { transition: none; }
+}
+.readiness-ring-figure {
+  position: absolute; font-family: var(--font-mono); font-weight: 700;
+  font-size: var(--text-sm); color: var(--ink); font-variant-numeric: tabular-nums;
+}
+
+/* ─── Events index — the front door (DESIGN.md: Hero register) ──────────── */
+.hero {
+  position: relative; overflow: hidden;
+  background: var(--ink); color: var(--accent-ink);
+  border-radius: var(--radius); padding: 40px 32px; margin-bottom: 24px;
+}
+.hero-scene {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.hero-content { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.hero h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: var(--text-hero); letter-spacing: -0.01em; text-wrap: balance;
+  max-width: 14ch;
+}
+.hero p {
+  margin: 10px 0 0; color: rgb(from var(--accent-ink) r g b / 72%);
+  font-size: var(--text-base); max-width: 42ch;
+}
+.hero .primary { flex: none; }
+
+.stat-strip { display: flex; gap: 28px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-strip .stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-strip .stat .n {
+  font-family: var(--font-mono); font-size: var(--text-figure); font-weight: 700;
+  line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.stat-strip .stat .l { font-size: var(--text-sm); color: var(--muted); }
+
+.event-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px; list-style: none; margin: 0; padding: 0;
+}
+.event-card {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px 10px; border-top: 1px solid var(--line);
-  text-decoration: none; color: inherit;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px; text-decoration: none; color: inherit;
+  transition: border-color 150ms ease;
 }
-.eventrow:hover { background: var(--sunken); }
-.eventrow .ev-main { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-.ev-score {
-  font-size: var(--t-body); font-weight: 650; padding: 4px 12px; border-radius: 999px;
-  font-variant-numeric: tabular-nums; flex: none;
+.event-card:hover { border-color: var(--accent); }
+.event-card .ev-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.event-card strong {
+  font-family: var(--font-display); font-weight: 600; font-size: var(--text-base);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.ev-score.ok { background: var(--yes-tint); color: var(--yes); border: 1px solid var(--line); }
-.ev-score.warn { background: var(--no-tint); color: var(--no); border: 1px solid var(--line); }
 
-.muted { color: var(--muted); font-size: var(--t-body); }
+.muted { color: var(--muted); font-size: var(--text-sm); }
 .err {
-  background: var(--no-tint); border: 1px solid var(--line); color: var(--no);
-  padding: 10px 12px; border-radius: 8px; font-size: var(--t-body); margin-top: 12px;
+  background: rgb(from var(--no) r g b / 12%); border: 1px solid rgb(from var(--no) r g b / 30%); color: var(--no);
+  padding: 10px 12px; border-radius: var(--radius-sm); font-size: var(--text-sm); margin-top: 12px;
 }
 .ok {
-  background: var(--yes-tint); border: 1px solid var(--line); color: var(--yes);
-  padding: 10px 12px; border-radius: 8px; font-size: var(--t-body); margin-top: 12px;
+  background: rgb(from var(--yes) r g b / 14%); border: 1px solid rgb(from var(--yes) r g b / 35%); color: var(--yes);
+  padding: 10px 12px; border-radius: var(--radius-sm); font-size: var(--text-sm); margin-top: 12px;
 }
-.live { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-micro); color: var(--muted); }
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); color: var(--muted); }
 .live .pulse {
   width: 7px; height: 7px; border-radius: 50%; background: var(--yes);
   animation: pulse 1.8s ease-in-out infinite;
 }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) {
+  .live .pulse { animation: none; }
+}
 
 /* Inline row action — small enough not to compete with the name beside it. */
-button.tiny { padding: 5px 11px; font-size: var(--t-micro); font-weight: 500; }
-
-/* ─── Touch ──────────────────────────────────────────────────────────────
-   On the day, this console is used one-handed on a phone at a distribution
-   queue — and the two things done there, "Mark attended" and "Send thanks",
-   were the SMALLEST targets in the app at roughly 24px tall. Coarse pointers
-   get the 44px minimum; a mouse keeps the tighter desk density, because the
-   same padding on a laptop just makes the roster scroll. */
-@media (pointer: coarse) {
-  button, .btnlink, .seg button, .tabs a, .sb-nav a {
-    min-height: 44px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-  button.tiny, .rosterline button {
-    min-height: 44px;
-    padding: 10px 14px;
-    font-size: var(--t-body);
-  }
-  /* The undo "×" on an attendance tag — a 14px target beside text you're
-     trying not to mis-tap. */
-  .tag .x {
-    min-width: 32px;
-    min-height: 32px;
-    text-align: center;
-    font-size: 16px;
-  }
-  .person { padding: 12px 6px; }
-}
+button.tiny { padding: 2px 8px; font-size: var(--text-label); font-weight: 500; }
 
 /* Beneficiary row — a card-within-a-card, since each carries more than a
    name: languages, courses, attendance history and notes. */
@@ -362,36 +410,56 @@ button.tiny { padding: 5px 11px; font-size: var(--t-micro); font-weight: 500; }
 .benef .nm { display: flex; flex-direction: column; gap: 3px; }
 .benef .nm .tag { align-self: flex-start; margin-top: 2px; }
 
+/* ─── Compose: fields + live WhatsApp preview side by side ────────────────── */
+.compose-layout { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-top: 6px; }
+.compose-fields { flex: 1; min-width: 260px; }
+.compose-preview { flex: none; width: 260px; }
+.compose-preview-label {
+  display: block; margin-bottom: 8px; font-size: var(--text-label);
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600;
+}
 
-/* Reduced motion: gentler, not absent. Someone who asked for less movement
-   still needs to see that a new RSVP arrived — so the travel goes and the
-   fade stays. */
-@media (prefers-reduced-motion: reduce) {
-  /* Travel removed, fade kept — the arrival still has to be noticeable. */
-  @keyframes roster-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  button:active:not(:disabled) { transform: none; }
+/* A real WhatsApp chrome, deliberately — not brand color, a representation
+   of the actual surface this message lands on. Bounded to this one component. */
+.wa-preview {
+  border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line);
+}
+.wa-preview-bar {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: #075E54; color: #fff;
+}
+.wa-preview-bar .avatar { background: rgb(255 255 255 / 20%); color: #fff; }
+.wa-preview-name { font-size: var(--text-sm); font-weight: 600; }
+.wa-preview-sub { font-size: var(--text-label); opacity: 0.75; }
+.wa-preview-body {
+  background: #E5DDD5; padding: 16px 12px; min-height: 140px;
+  display: flex; align-items: flex-start;
+}
+.wa-bubble {
+  position: relative; background: #DCF8C6; color: #111b21;
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 0;
+  padding: 8px 10px 18px;
+  font-size: var(--text-sm); line-height: 1.4; max-width: 100%;
+  white-space: pre-wrap; word-break: break-word;
+}
+.wa-bubble-time {
+  position: absolute; right: 10px; bottom: 5px;
+  font-size: var(--text-label); color: rgb(17 27 33 / 45%);
+}
+.wa-poll-options { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.wa-poll-option {
+  font-size: var(--text-label); padding: 5px 8px; border-radius: 6px;
+  background: rgb(255 255 255 / 55%); color: #111b21;
 }
 
 /* A panel that appears in place of nothing, pushing the content below it down.
    Without a bridge the list below appears to jump; with one, the panel reads
    as having arrived. Used by the beneficiary add/edit form. */
-.card.enter {
-  animation: card-in 200ms var(--ease-out) both;
-}
+.card.enter { animation: card-in 200ms var(--ease-out) both; }
 @keyframes card-in {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: none; }
 }
-@media (prefers-reduced-motion: reduce) {
-  @keyframes card-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-}
-
 
 /* A panel that opens from a control should look like it came from that
    control, not from the middle of the page. The attendance picker grows from
@@ -403,12 +471,6 @@ button.tiny { padding: 5px 11px; font-size: var(--t-micro); font-weight: 500; }
 @keyframes picker-in {
   from { opacity: 0; transform: scale(0.97) translateY(-3px); }
   to   { opacity: 1; transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  @keyframes picker-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
 }
 
 /* ─── Earned moments ─────────────────────────────────────────────────────── */
@@ -437,9 +499,7 @@ button.tiny { padding: 5px 11px; font-size: var(--t-micro); font-weight: 500; }
 /* The VIP Pass unlocking. Rare, high-emotion, once per person — this is where
    the delight budget belongs, and it was the only moment in the app with real
    feeling behind it and no expression at all. */
-.tag.vip-new {
-  animation: vip-unlock 900ms var(--ease-out) both;
-}
+.tag.vip-new { animation: vip-unlock 900ms var(--ease-out) both; }
 @keyframes vip-unlock {
   0%   { opacity: 0; transform: scale(0.6) rotate(-8deg); }
   45%  { opacity: 1; transform: scale(1.18) rotate(2deg); }
@@ -447,8 +507,41 @@ button.tiny { padding: 5px 11px; font-size: var(--t-micro); font-weight: 500; }
   100% { opacity: 1; transform: none; }
 }
 
+/* ─── Touch ──────────────────────────────────────────────────────────────
+   On the day, this console is used one-handed on a phone at a distribution
+   queue — the two things done there, "Mark attended" and "Send thanks", were
+   the smallest targets in the app at roughly 24px tall. Coarse pointers get
+   the 44px minimum; a mouse keeps the tighter desk density, since the same
+   padding on a laptop just makes the roster scroll. */
+@media (pointer: coarse) {
+  button, .btnlink, .seg button, .tabs a, .sb-nav a {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  button.tiny, .rosterline button {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: var(--text-base);
+  }
+  .tag .x {
+    min-width: 32px;
+    min-height: 32px;
+    text-align: center;
+    font-size: 16px;
+  }
+  .person { padding: 12px 6px; }
+}
+
+/* Reduced motion: gentler, not absent. Someone who asked for less movement
+   still needs to see that a new RSVP arrived, or that a count changed — so
+   the travel goes and the fade stays. */
 @media (prefers-reduced-motion: reduce) {
+  @keyframes roster-in  { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes card-in    { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes picker-in  { from { opacity: 0; } to { opacity: 1; } }
   @keyframes banner-in  { from { opacity: 0; } to { opacity: 1; } }
   @keyframes count-mark { 0%, 100% { opacity: 1; } 40% { opacity: 0.5; } }
   @keyframes vip-unlock { from { opacity: 0; } to { opacity: 1; } }
+  button:active:not(:disabled) { transform: none; }
 }

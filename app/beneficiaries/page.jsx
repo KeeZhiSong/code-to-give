@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AppHeader from "@/components/AppHeader.jsx";
-import { maskPhone } from "@/lib/ui/format";
+import { initials, maskPhone } from "@/lib/ui/format";
 
 const BLANK = {
   name: "",
@@ -411,14 +411,17 @@ export default function BeneficiariesPage() {
             <div key={p.id} className="benef">
               <div className="between">
                 <span className="nm">
-                  <strong>{p.name || "—"}</strong>
-                  {p.vipStatus && (
-                    <span
-                      className={`tag pts${justVip === p.id ? " vip-new" : ""}`}
-                    >
-                      ⭐ VIP Pass
-                    </span>
-                  )}
+                  <span className="row" style={{ gap: 8 }}>
+                    <span className="avatar" aria-hidden="true">{initials(p.name)}</span>
+                    <strong>{p.name || "—"}</strong>
+                    {/* Gold Exclusivity Rule (DESIGN.md): VIP is one of the two
+                        places gold appears — was the generic green "pts" tint. */}
+                    {p.vipStatus && (
+                      <span className={`tag vip${justVip === p.id ? " vip-new" : ""}`}>
+                        ⭐ VIP Pass
+                      </span>
+                    )}
+                  </span>
                   <span className="sub">
                     {[
                       maskPhone(p.phone),

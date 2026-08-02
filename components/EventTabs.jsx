@@ -6,13 +6,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, Send, ListChecks, Settings } from "lucide-react";
 
 const TABS = [
-  { slug: "", label: "Overview" },
-  { slug: "people", label: "People" },
-  { slug: "broadcast", label: "Broadcast" },
-  { slug: "tasks", label: "Tasks" },
-  { slug: "settings", label: "Settings" },
+  { slug: "", label: "Overview", Icon: LayoutDashboard },
+  { slug: "people", label: "People", Icon: Users },
+  { slug: "broadcast", label: "Broadcast", Icon: Send },
+  { slug: "tasks", label: "Tasks", Icon: ListChecks },
+  { slug: "settings", label: "Settings", Icon: Settings },
 ];
 
 export default function EventTabs({ eventId }) {
@@ -28,6 +29,7 @@ export default function EventTabs({ eventId }) {
         const active = tab.slug ? pathname.startsWith(href) : pathname === base;
         return (
           <Link key={tab.slug} href={href} className={active ? "on" : ""}>
+            <tab.Icon size={15} aria-hidden="true" />
             {tab.label}
           </Link>
         );

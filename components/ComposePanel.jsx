@@ -11,6 +11,38 @@ import { useState } from "react";
 const DEFAULT_TEXT =
   "Hi {name}! Reminder: GIFTIK distribution this Sunday, 9am at Kranji. 🙏";
 
+// What the message actually looks like in the one place it'll be read — not
+// decoration, the real send content merged the same way /api/send merges it.
+function WhatsAppPreview({ mode, message, question }) {
+  const body =
+    mode === "poll"
+      ? question || "Your poll question…"
+      : (message || "").replaceAll("{name}", "Priya") || "Your message…";
+  return (
+    <div className="wa-preview" aria-label="Preview of the WhatsApp message">
+      <div className="wa-preview-bar">
+        <span className="avatar lg" aria-hidden="true">PT</span>
+        <div>
+          <div className="wa-preview-name">Passion To Serve</div>
+          <div className="wa-preview-sub">WhatsApp</div>
+        </div>
+      </div>
+      <div className="wa-preview-body">
+        <div className="wa-bubble">
+          {body}
+          {mode === "poll" && (
+            <div className="wa-poll-options">
+              <div className="wa-poll-option">○ Yes, I&apos;m in</div>
+              <div className="wa-poll-option">○ Can&apos;t make it</div>
+            </div>
+          )}
+          <span className="wa-bubble-time">9:41 AM</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ComposePanel({ event, recipients, onSent }) {
   const [mode, setMode] = useState("poll");
   const [message, setMessage] = useState(DEFAULT_TEXT);
@@ -75,6 +107,8 @@ export default function ComposePanel({ event, recipients, onSent }) {
     <section className="card" id="compose-section">
       <h2>Compose</h2>
 
+      <div className="compose-layout">
+      <div className="compose-fields">
       <div className="seg" style={{ marginBottom: 14 }}>
         <button
           className={mode === "poll" ? "on" : ""}
@@ -150,6 +184,13 @@ export default function ComposePanel({ event, recipients, onSent }) {
           )}
         </>
       )}
+      </div>
+
+      <div className="compose-preview">
+        <span className="compose-preview-label">Preview</span>
+        <WhatsAppPreview mode={mode} message={message} question={event?.question} />
+      </div>
+      </div>
 
       <div className="row">
         <button

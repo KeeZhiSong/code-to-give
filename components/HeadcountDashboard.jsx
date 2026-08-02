@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Users, Clock3, HeartHandshake, Link as LinkIcon } from "lucide-react";
 
 function ratioClass(confirmed, target) {
   if (target == null) return "";
@@ -71,7 +72,7 @@ export default function HeadcountDashboard({ eventId }) {
 
       <div className="pf-stat-grid">
         <div className="pf-stat-tile">
-          <span className="pf-eyebrow">Confirmed volunteers</span>
+          <span className="pf-eyebrow"><Users size={13} aria-hidden="true" /> Confirmed volunteers</span>
           <div className="pf-stat-figure pf-tabular">
             {volunteers.confirmed}
             {volunteers.target != null && <span className="pf-of"> of {volunteers.target} target</span>}
@@ -80,7 +81,7 @@ export default function HeadcountDashboard({ eventId }) {
             <div className="pf-bar-track">
               <div
                 className={`pf-bar-fill ${ratioClass(volunteers.confirmed, volunteers.target)}`}
-                style={{ width: `${Math.min(100, (volunteers.confirmed / volunteers.target) * 100)}%` }}
+                style={{ transform: `scaleX(${Math.min(1, volunteers.confirmed / volunteers.target)})` }}
                 role="progressbar"
                 aria-valuenow={volunteers.confirmed}
                 aria-valuemin={0}
@@ -91,13 +92,13 @@ export default function HeadcountDashboard({ eventId }) {
         </div>
 
         <div className="pf-stat-tile">
-          <span className="pf-eyebrow">Waitlisted volunteers</span>
+          <span className="pf-eyebrow"><Clock3 size={13} aria-hidden="true" /> Waitlisted volunteers</span>
           <div className="pf-stat-figure pf-tabular">{volunteers.waitlisted}</div>
           <div className="pf-stat-note">Auto-promoted the moment a confirmed volunteer drops out.</div>
         </div>
 
         <div className="pf-stat-tile">
-          <span className="pf-eyebrow">Confirmed beneficiaries</span>
+          <span className="pf-eyebrow"><HeartHandshake size={13} aria-hidden="true" /> Confirmed beneficiaries</span>
           <div className="pf-stat-figure pf-tabular">{beneficiaries.confirmed}</div>
           <div className="pf-stat-note">Not capacity-gated — everyone who says yes is counted in.</div>
         </div>
@@ -105,7 +106,7 @@ export default function HeadcountDashboard({ eventId }) {
 
       <div className="pf-share-row">
         <div className="pf-share-info">
-          <div className="pf-share-label">Share with transport &amp; logistics partners</div>
+          <div className="pf-share-label"><LinkIcon size={12} aria-hidden="true" /> Share with transport &amp; logistics partners</div>
           <div className="pf-share-link pf-tabular">{origin ? `${origin}/share/${eventId}` : "…"}</div>
           <div className="pf-share-help">
             Read-only, no login required — safe to hand to a partner who just needs headcounts.

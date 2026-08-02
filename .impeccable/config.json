@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-color",
+        "value": "#075e54",
+        "createdAt": "2026-08-02T03:13:11.177Z",
+        "reason": "User confirmed: real WhatsApp header teal, used only in the Compose WhatsApp-preview mockup, not app UI"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#dcf8c6",
+        "createdAt": "2026-08-02T03:13:11.278Z",
+        "reason": "User confirmed: real WhatsApp message-bubble green, used only in the Compose WhatsApp-preview mockup, not app UI"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#111b21",
+        "createdAt": "2026-08-02T03:13:11.381Z",
+        "reason": "User confirmed: real WhatsApp bubble text color, used only in the Compose WhatsApp-preview mockup, not app UI"
+      }
+    ]
+  }
+}

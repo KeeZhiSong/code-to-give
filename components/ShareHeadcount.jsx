@@ -39,7 +39,7 @@ export default function ShareHeadcount({ eventId, initialData }) {
           <div className="pf-bar-track">
             <div
               className={`pf-bar-fill ${ratioClass(volunteers.confirmed, volunteers.target)}`}
-              style={{ width: `${Math.min(100, (volunteers.confirmed / volunteers.target) * 100)}%` }}
+              style={{ transform: `scaleX(${Math.min(1, volunteers.confirmed / volunteers.target)})` }}
               role="progressbar"
               aria-valuenow={volunteers.confirmed}
               aria-valuemin={0}

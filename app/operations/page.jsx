@@ -17,30 +17,30 @@ import {
 // behind them yet.
 
 // ---------- palette / type tokens ----------
-// Aliases onto the app palette in globals.css :root. These were literal hex
-// values — a fourth visual world (kraft paper + teal) alongside the console,
-// the .pf-* dashboards and the shift board. Inline styles resolve var(), so
-// the whole page re-themes from one place without touching its markup.
+// Shares the project-wide system in DESIGN.md — see app/globals.css for the
+// canonical values. kraft/kraftDark/stamp used to be a second and third
+// accent color; consolidated to C.teal (the One Accent Rule). C.error is
+// kept separate for real error states, which C.stamp used to also cover —
+// that conflation meant "error" and "decorative accent" were the same color.
 const C = {
-  paper: "var(--bg)",
-  paperDark: "var(--sunken)",
-  ink: "var(--ink)",
-  inkSoft: "var(--muted)",
-  kraft: "var(--accent)",
-  kraftDark: "var(--accent-ink)",
-  teal: "var(--yes)",
-  tealDark: "var(--yes)",
-  tealLight: "var(--yes-tint)",
-  stamp: "var(--no)",
-  line: "var(--line)",
-  white: "var(--card)",
+  paper: "#FAF7F0",
+  paperDark: "#EFE8D6",
+  ink: "#0E2A3B",
+  inkSoft: "#56707D",
+  kraft: "#1C6B5E",
+  kraftDark: "#1C6B5E",
+  teal: "#1C6B5E",
+  tealDark: "#175A4F",
+  tealLight: "#E1EDEA",
+  stamp: "#1C6B5E",
+  error: "#8B4B3E",
+  line: "#E2DDCF",
+  white: "#FFFFFA",
 };
 
-const FONTS = `
-/* Fonts come from the app palette (globals.css) — Public Sans, Big Shoulders
-   and IBM Plex Mono are embedded as base64 in pts-features.css, so there is
-   nothing to fetch at runtime and no flash of unstyled text. */
-`;
+// Fonts come from next/font/google in app/layout.jsx, exposed as
+// --font-display/--font-body/--font-mono on <html> — no external @import.
+const FONTS = ``;
 
 const SEED_INVENTORY = [
   { id: "inv-relief-packs", name: "Relief goods packs", type: "Critical supply", qty: 240, checkedOut: 0, unit: "packs", low: 40 },
@@ -217,7 +217,7 @@ export default function VolunteerDashboard() {
   );
 
   return (
-    <div style={{ background: C.paper, minHeight: "100vh", fontFamily: "var(--font-sans)", color: C.ink }}>
+    <div style={{ background: C.paper, minHeight: "100vh", fontFamily: "var(--font-body)", color: C.ink }}>
       <style>{FONTS}</style>
 
       {/* Header */}
@@ -230,7 +230,7 @@ export default function VolunteerDashboard() {
                 Volunteer Operations Dashboard
               </div>
             </div>
-            <div style={{ fontSize: 13, color: "#C9C3AE", marginTop: 4, fontFamily: "var(--font-mono)" }}>
+            <div style={{ fontSize: 13, color: "rgba(250,247,240,0.65)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
               Check the progress of incoming drives, manage inventory &amp; review live operation logs
             </div>
           </div>
@@ -262,7 +262,7 @@ export default function VolunteerDashboard() {
               {feed.map((f) => (
                 <div key={f.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "9px 14px", borderBottom: `1px solid ${C.paperDark}`, fontSize: 13 }}>
                   <span>{f.text}</span>
-                  <span style={{ color: C.inkSoft, fontFamily: "var(--font-mono)", fontSize: 12, whiteSpace: "nowrap" }}>{timeAgo(f.ts)}</span>
+                  <span style={{ color: C.inkSoft, fontFamily: "var(--font-mono)", fontSize: 11, whiteSpace: "nowrap" }}>{timeAgo(f.ts)}</span>
                 </div>
               ))}
             </div>
@@ -282,12 +282,12 @@ export default function VolunteerDashboard() {
                     <div key={it.id} style={{ padding: "10px 14px", borderBottom: `1px solid ${C.paperDark}` }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
                         <span style={{ fontSize: 13, fontWeight: 600 }}>{it.name}</span>
-                        <span style={{ fontSize: 12, color: isLow ? C.stamp : C.inkSoft, fontFamily: "var(--font-mono)" }}>
+                        <span style={{ fontSize: 11, color: isLow ? C.stamp : C.inkSoft, fontFamily: "var(--font-mono)" }}>
                           {isLow ? "LOW · " : ""}{available}/{it.qty} {it.unit}
                         </span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 12, color: C.inkSoft }}>{it.type}{it.checkedOut > 0 ? ` · ${it.checkedOut} checked out` : ""}</span>
+                        <span style={{ fontSize: 11, color: C.inkSoft }}>{it.type}{it.checkedOut > 0 ? ` · ${it.checkedOut} checked out` : ""}</span>
                         <div style={{ display: "flex", gap: 4 }}>
                           <button onClick={() => adjustCheckout(it.id, -1)} disabled={it.checkedOut <= 0} title="Check in"
                             style={{ border: `1px solid ${C.line}`, background: "transparent", borderRadius: 5, padding: "3px 6px", cursor: it.checkedOut <= 0 ? "not-allowed" : "pointer", color: C.inkSoft }}>
@@ -317,14 +317,14 @@ export default function VolunteerDashboard() {
                         {v.teamLead && <Star size={12} color={C.kraftDark} fill={C.kraftDark} />}
                         {v.name}
                       </div>
-                      <div style={{ fontSize: 12, color: C.inkSoft }}>{v.role} · {v.eventName}</div>
+                      <div style={{ fontSize: 11, color: C.inkSoft }}>{v.role} · {v.eventName}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 12, color: C.inkSoft, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}>
+                      <div style={{ fontSize: 11, color: C.inkSoft, display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end" }}>
                         <Clock size={11} /> {v.shift}
                       </div>
                       <span style={{
-                        fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
+                        fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
                         color: v.status === "active" ? C.teal : C.inkSoft,
                       }}>
                         {v.status === "active" ? "Active now" : "Upcoming"}
@@ -344,7 +344,7 @@ export default function VolunteerDashboard() {
               </div>
               <button
                 onClick={() => setShowIncidentForm((s) => !s)}
-                style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: `1px solid ${C.kraft}`, color: C.paper, borderRadius: 5, padding: "4px 8px", fontSize: 12, cursor: "pointer" }}
+                style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: `1px solid ${C.kraft}`, color: C.paper, borderRadius: 5, padding: "4px 8px", fontSize: 11, cursor: "pointer" }}
               >
                 <Plus size={12} /> Log incident
               </button>
@@ -381,12 +381,12 @@ export default function VolunteerDashboard() {
                   <div style={{ fontSize: 13, fontWeight: 600, textDecoration: inc.status === "resolved" ? "line-through" : "none", color: inc.status === "resolved" ? C.inkSoft : C.ink }}>
                     {inc.title}
                   </div>
-                  <div style={{ fontSize: 12, color: C.inkSoft }}>{inc.severity}{inc.eventName ? ` · ${inc.eventName}` : ""}</div>
+                  <div style={{ fontSize: 11, color: C.inkSoft }}>{inc.severity}{inc.eventName ? ` · ${inc.eventName}` : ""}</div>
                 </div>
                 <span style={{
-                  fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, padding: "3px 8px", borderRadius: 4,
-                  background: inc.status === "open" ? "#F6E3DB" : C.tealLight,
-                  color: inc.status === "open" ? C.stamp : C.tealDark,
+                  fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, padding: "3px 8px", borderRadius: 4,
+                  background: inc.status === "open" ? "rgba(139,75,62,0.12)" : C.tealLight,
+                  color: inc.status === "open" ? C.error : C.tealDark,
                 }}>
                   {inc.status === "open" ? "Open" : "Resolved"}
                 </span>
@@ -455,7 +455,7 @@ export default function VolunteerDashboard() {
 
           <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: 22, position: "relative", marginBottom: 20 }}>
             <StampBadge />
-            <div style={{ fontSize: 12, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "var(--font-mono)" }}>
+            <div style={{ fontSize: 11, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "var(--font-mono)" }}>
               Event Operation Details
             </div>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, margin: "4px 0 8px" }}>
@@ -500,7 +500,7 @@ function StatCard({ label, value, sub, color, icon, C }) {
         <span style={{ color }}>{icon}</span> {label}
       </div>
       <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 26, color: C.ink }}>{value}</div>
-      <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 11, color: C.inkSoft, marginTop: 2 }}>{sub}</div>
     </div>
   );
 }
@@ -508,7 +508,7 @@ function StatCard({ label, value, sub, color, icon, C }) {
 function ProgressBar({ percent, color, C }) {
   return (
     <div style={{ height: 8, borderRadius: 999, background: C.paperDark, overflow: "hidden" }}>
-      <div style={{ height: "100%", width: `${percent}%`, background: color, borderRadius: 999, transition: "width 0.2s" }} />
+      <div style={{ height: "100%", width: "100%", transform: `scaleX(${percent / 100})`, transformOrigin: "left", background: color, borderRadius: 999, transition: "transform 0.2s" }} />
     </div>
   );
 }
@@ -517,7 +517,7 @@ function MiniBar({ label, icon, done, total, color, C }) {
   const percent = total ? Math.round((done / total) * 100) : 0;
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, color: C.inkSoft, marginBottom: 3 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: C.inkSoft, marginBottom: 3 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>{icon} {label}</span>
         <span style={{ fontFamily: "var(--font-mono)" }}>{done}/{total}</span>
       </div>

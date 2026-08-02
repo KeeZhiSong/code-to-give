@@ -7,30 +7,30 @@ import {
 } from "lucide-react";
 
 // ---------- palette / type tokens ----------
-// Aliases onto the app palette in globals.css :root. These were literal hex
-// values — a fourth visual world (kraft paper + teal) alongside the console,
-// the .pf-* dashboards and the shift board. Inline styles resolve var(), so
-// the whole page re-themes from one place without touching its markup.
+// Shares the project-wide system in DESIGN.md — see app/globals.css for the
+// canonical values. kraft/kraftDark/stamp used to be a second and third
+// accent color; consolidated to C.teal (the One Accent Rule). C.error is
+// kept separate for real error states, which C.stamp used to also cover —
+// that conflation meant "error" and "decorative accent" were the same color.
 const C = {
-  paper: "var(--bg)",
-  paperDark: "var(--sunken)",
-  ink: "var(--ink)",
-  inkSoft: "var(--muted)",
-  kraft: "var(--accent)",
-  kraftDark: "var(--accent-ink)",
-  teal: "var(--yes)",
-  tealDark: "var(--yes)",
-  tealLight: "var(--yes-tint)",
-  stamp: "var(--no)",
-  line: "var(--line)",
-  white: "var(--card)",
+  paper: "#FAF7F0",
+  paperDark: "#EFE8D6",
+  ink: "#0E2A3B",
+  inkSoft: "#56707D",
+  kraft: "#1C6B5E",
+  kraftDark: "#1C6B5E",
+  teal: "#1C6B5E",
+  tealDark: "#175A4F",
+  tealLight: "#E1EDEA",
+  stamp: "#1C6B5E",
+  error: "#8B4B3E",
+  line: "#E2DDCF",
+  white: "#FFFFFA",
 };
 
-const FONTS = `
-/* Fonts come from the app palette (globals.css) — Public Sans, Big Shoulders
-   and IBM Plex Mono are embedded as base64 in pts-features.css, so there is
-   nothing to fetch at runtime and no flash of unstyled text. */
-`;
+// Fonts come from next/font/google in app/layout.jsx, exposed as
+// --font-display/--font-body/--font-mono on <html> — no external @import.
+const FONTS = ``;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -656,12 +656,12 @@ export default function EventDispatchBoard() {
 
   if (!loaded) {
     return (
-      <div style={{ padding: 40, fontFamily: "var(--font-sans)", color: C.inkSoft }}>Loading dispatch board…</div>
+      <div style={{ padding: 40, fontFamily: "var(--font-body)", color: C.inkSoft }}>Loading dispatch board…</div>
     );
   }
 
   return (
-    <div style={{ background: C.paper, minHeight: "100%", fontFamily: "var(--font-sans)", color: C.ink }}>
+    <div style={{ background: C.paper, minHeight: "100%", fontFamily: "var(--font-body)", color: C.ink }}>
       <style>{FONTS}</style>
 
       {/* header */}
@@ -672,13 +672,13 @@ export default function EventDispatchBoard() {
             Dispatch Board
           </div>
         </div>
-        <div style={{ fontSize: 13, color: "#C9C3AE", marginTop: 4, fontFamily: "var(--font-mono)" }}>
+        <div style={{ fontSize: 13, color: "rgba(250,247,240,0.65)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
           Passion To Serve — Items · Knowledge · Peace — one clone per next occurrence
         </div>
       </div>
 
       {saveError && (
-        <div style={{ background: "#F6E3DB", color: C.stamp, padding: "8px 28px", fontSize: 13, fontFamily: "var(--font-mono)" }}>
+        <div style={{ background: "rgba(139,75,62,0.12)", color: C.error, padding: "8px 28px", fontSize: 13, fontFamily: "var(--font-mono)" }}>
           Storage unavailable right now — changes won't be saved between visits.
         </div>
       )}
@@ -692,7 +692,7 @@ export default function EventDispatchBoard() {
               style={{
                 display: "flex", alignItems: "center", gap: 6, background: C.teal, color: C.white,
                 border: "none", borderRadius: 6, padding: "8px 14px", fontWeight: 600, cursor: "pointer",
-                fontFamily: "var(--font-sans)", fontSize: 13,
+                fontFamily: "var(--font-body)", fontSize: 13,
               }}
             >
               <Plus size={15} /> New template
@@ -725,7 +725,7 @@ export default function EventDispatchBoard() {
                         boxShadow: "0 1px 0 rgba(0,0,0,0.04)", position: "relative",
                       }}
                     >
-                      <div style={{ background: C.kraft, color: "var(--accent-ink)", padding: "10px 14px", fontFamily: "var(--font-display)", fontWeight: 700 }}>
+                      <div style={{ background: C.teal, color: C.white, padding: "10px 14px", fontFamily: "var(--font-display)", fontWeight: 700 }}>
                         {t.name}
                       </div>
                       <Perforation />
@@ -789,7 +789,7 @@ export default function EventDispatchBoard() {
 
       {/* ---------------- CLONE MODAL ---------------- */}
       {view === "clone" && activeTemplate && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(35,38,32,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(14,42,59,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div style={{ background: C.white, borderRadius: 10, width: 380, maxWidth: "100%", overflow: "hidden", position: "relative" }}>
             <div style={{ background: C.ink, color: C.paper, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}>New occurrence</div>
@@ -806,7 +806,7 @@ export default function EventDispatchBoard() {
                 type="date"
                 value={cloneForm.date}
                 onChange={(e) => setCloneForm((f) => ({ ...f, date: e.target.value }))}
-                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "var(--font-sans)" }}
+                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "var(--font-body)" }}
               />
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 4, color: C.inkSoft }}>
                 <MapPin size={12} style={{ verticalAlign: -1, marginRight: 4 }} /> Venue
@@ -816,14 +816,14 @@ export default function EventDispatchBoard() {
                 placeholder="e.g. Barangay Covered Court"
                 value={cloneForm.venue}
                 onChange={(e) => setCloneForm((f) => ({ ...f, venue: e.target.value }))}
-                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 18, fontFamily: "var(--font-sans)" }}
+                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 18, fontFamily: "var(--font-body)" }}
               />
               <button
                 onClick={confirmClone}
                 disabled={!cloneForm.date || !cloneForm.venue}
                 style={{
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  background: (!cloneForm.date || !cloneForm.venue) ? "#CFC9AE" : C.stamp, color: C.white, border: "none",
+                  background: (!cloneForm.date || !cloneForm.venue) ? C.line : C.stamp, color: C.white, border: "none",
                   borderRadius: 6, padding: "12px", fontWeight: 700, letterSpacing: 1, cursor: (!cloneForm.date || !cloneForm.venue) ? "not-allowed" : "pointer",
                   fontFamily: "var(--font-display)", textTransform: "uppercase", fontSize: 13,
                 }}
@@ -837,8 +837,8 @@ export default function EventDispatchBoard() {
                   style={{
                     marginTop: 12,
                     fontSize: 13,
-                    fontFamily: "var(--font-sans)",
-                    color: cloneStatus.state === "error" ? C.stamp : C.teal,
+                    fontFamily: "var(--font-body)",
+                    color: cloneStatus.state === "error" ? C.error : C.teal,
                   }}
                 >
                   {cloneStatus.message}
@@ -874,7 +874,7 @@ export default function EventDispatchBoard() {
           <select
             value={newTmpl.category}
             onChange={(e) => setNewTmpl((f) => ({ ...f, category: e.target.value }))}
-            style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "var(--font-sans)", background: C.white }}
+            style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "var(--font-body)", background: C.white }}
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -901,7 +901,7 @@ export default function EventDispatchBoard() {
             onClick={createTemplate}
             disabled={!newTmpl.name.trim()}
             style={{
-              background: !newTmpl.name.trim() ? "#CFC9AE" : C.teal, color: C.white, border: "none", borderRadius: 6,
+              background: !newTmpl.name.trim() ? C.line : C.teal, color: C.white, border: "none", borderRadius: 6,
               padding: "10px 18px", fontWeight: 600, cursor: !newTmpl.name.trim() ? "not-allowed" : "pointer",
             }}
           >
@@ -919,7 +919,7 @@ export default function EventDispatchBoard() {
 
           <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: 22, position: "relative", marginBottom: 20 }}>
             <StampBadge />
-            <div style={{ fontSize: 12, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "var(--font-mono)" }}>
+            <div style={{ fontSize: 11, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "var(--font-mono)" }}>
               cloned from {activeEvent.templateName}
             </div>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, margin: "4px 0 8px" }}>
@@ -1013,7 +1013,7 @@ function ChecklistCard({ title, icon, items, doneKey, onToggle, onAdd, onRemove,
             </div>
             <button
               onClick={() => onRemove(it.id)}
-              style={{ background: "transparent", border: "none", color: "#C9BE9C", cursor: "pointer", padding: "4px" }}
+              style={{ background: "transparent", border: "none", color: C.inkSoft, cursor: "pointer", padding: "4px" }}
               title="Remove item"
             >
               <X size={14} />
@@ -1030,13 +1030,13 @@ function ChecklistCard({ title, icon, items, doneKey, onToggle, onAdd, onRemove,
           onChange={(e) => setNewItemText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder={`Add to ${title.toLowerCase()}...`}
-          style={{ flex: 1, padding: "6px 10px", border: `1px solid ${C.line}`, borderRadius: 4, fontSize: 12, fontFamily: "var(--font-sans)" }}
+          style={{ flex: 1, padding: "6px 10px", border: `1px solid ${C.line}`, borderRadius: 4, fontSize: 12, fontFamily: "var(--font-body)" }}
         />
         <button
           onClick={handleAdd}
           disabled={!newItemText.trim()}
           style={{ 
-            background: newItemText.trim() ? C.teal : "#CFC9AE", 
+            background: newItemText.trim() ? C.teal : C.line, 
             color: C.white, border: "none", borderRadius: 4, padding: "0 10px", 
             cursor: newItemText.trim() ? "pointer" : "not-allowed",
             display: "flex", alignItems: "center", justifyContent: "center"

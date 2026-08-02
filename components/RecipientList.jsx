@@ -6,7 +6,7 @@
 //
 // Never renders a full phone number: masked to last-4 in both modes.
 
-import { ANY, maskPhone } from "@/lib/ui/format";
+import { ANY, initials, maskPhone } from "@/lib/ui/format";
 
 export default function RecipientList({
   people,
@@ -235,22 +235,26 @@ export default function RecipientList({
                         onChange={() => onToggle(p.phone)}
                       />
                     )}
+                    <span className="avatar" aria-hidden="true">{initials(p.name)}</span>
                     <span className="nm">
                       {p.name || "—"}
                       {profile && <span className="sub">{profile}</span>}
                     </span>
                     {/* A returning volunteer is who you re-invite when
-                        headcount is short — worth seeing at a glance. */}
+                        headcount is short — worth seeing at a glance.
+                        Gold Exclusivity Rule (DESIGN.md): the solid-gold
+                        treatment is reserved for Gold tier and VIP only —
+                        Bronze/Silver keep the ordinary loyalty tint. */}
                     {p.loyaltyPoints > 0 && (
                       <span
-                        className="tag pts"
-                        title={`${p.loyaltyPoints} loyalty points`}
+                        className={`tag pts${p.loyaltyTier === "Gold" ? " gold" : ""}`}
+                        title={`${p.loyaltyTier || "Loyalty"}: ${p.loyaltyPoints} points`}
                       >
                         {p.loyaltyTier ? `${p.loyaltyTier} · ` : ""}
                         {p.loyaltyPoints} pts
                       </span>
                     )}
-                    {p.vipStatus && <span className="tag">VIP</span>}
+                    {p.vipStatus && <span className="tag vip">VIP</span>}
                     {/* Whether this is their first event — the signal for
                         skipping a repeat welcome/intro message in Compose. */}
                     {Array.isArray(p.eventsAttended) &&

@@ -7,7 +7,7 @@
 // feeding both the re-invite list and the loyalty ledger.
 
 import { useEffect, useRef, useState } from "react";
-import { displayName, formatTime } from "@/lib/ui/format";
+import { displayName, formatTime, initials } from "@/lib/ui/format";
 
 /**
  * Marks a number as having just changed, without touching the number itself.
@@ -46,12 +46,6 @@ export default function RosterPanel({
   // refresh forgets, because nothing records it server-side.
   const [thanking, setThanking] = useState(() => new Set());
   const [thanked, setThanked] = useState(() => new Set());
-
-  // Poll ticks every few seconds; without a marker a headcount moving 3 → 4
-  // is invisible to anyone not staring at that exact digit.
-  const goingChanged = useChanged(roster.going.length);
-  const notGoingChanged = useChanged(roster.notGoing.length);
-  const awaitingChanged = useChanged(awaiting);
 
   async function markAttended(phone) {
     if (!event || marking.has(phone)) return;
@@ -116,6 +110,12 @@ export default function RosterPanel({
     }
   }
 
+  // Poll ticks every few seconds; without a marker a headcount moving 3 → 4
+  // is invisible to anyone not staring at that exact digit.
+  const goingChanged = useChanged(roster.going.length);
+  const notGoingChanged = useChanged(roster.notGoing.length);
+  const awaitingChanged = useChanged(awaiting);
+
   const entries = [...roster.going, ...roster.notGoing];
 
   return (
@@ -165,6 +165,7 @@ export default function RosterPanel({
                 className={`rosterline ${r.answer}`}
               >
                 <span className="dot" />
+                <span className="avatar" aria-hidden="true">{initials(displayName(r))}</span>
                 <span className="who">
                   {displayName(r)}
                   <div className="muted">{r.raw}</div>

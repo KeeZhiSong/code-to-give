@@ -15,6 +15,7 @@ export default function EventForm({
 }) {
   return (
     <form onSubmit={onSubmit} style={{ marginTop: 14 }}>
+      <div className="form-section-label">The basics</div>
       <div className="fields">
         <label>
           <span className="muted">Event name *</span>
@@ -103,7 +104,8 @@ export default function EventForm({
         </label>
       </div>
 
-      <div className="fields" style={{ marginTop: 12 }}>
+      <div className="form-section-label" style={{ marginTop: 20 }}>What volunteers should know</div>
+      <div className="fields">
         <label>
           <span className="muted">Meeting point</span>
           <input
@@ -156,7 +158,8 @@ export default function EventForm({
         </label>
       </div>
 
-      <label style={{ display: "block", marginTop: 12 }}>
+      <div className="form-section-label" style={{ marginTop: 20 }}>The WhatsApp invite</div>
+      <label style={{ display: "block" }}>
         <span className="muted">
           What this event is — one or two sentences, sent with the invite
         </span>
@@ -184,7 +187,8 @@ export default function EventForm({
       {/* The automatic reply after someone votes. Left blank, the default
           wording in lib/eventMessage.js is used — which already names the
           event and repeats the time, venue and what to bring. */}
-      <div className="fields" style={{ marginTop: 12 }}>
+      <div className="form-section-label" style={{ marginTop: 20 }}>Auto-replies (optional)</div>
+      <div className="fields">
         <label>
           <span className="muted">Reply when they say yes</span>
           <input
