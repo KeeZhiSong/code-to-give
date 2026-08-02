@@ -11,7 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/", label: "Events", hint: "Plan and run", exact: true },
+  { href: "/events", label: "Events", hint: "Plan and run", exact: true },
   { href: "/beneficiaries", label: "Beneficiaries", hint: "Who we serve" },
   { href: "/dispatch", label: "Templates", hint: "Reuse a past event" },
   { href: "/operations", label: "Operations", hint: "On-the-day logistics" },
@@ -21,16 +21,14 @@ const NAV = [
 export default function Sidebar() {
   const pathname = usePathname();
 
-  // The public headcount page stands alone, and so does the landing page —
-  // someone arriving cold is deciding whether to look, not navigating a
-  // console they already use.
-  if (pathname.startsWith("/share") || pathname.startsWith("/welcome")) {
-    return null;
-  }
+  // The public headcount page stands alone, and so does the landing page at
+  // the root — someone arriving cold is deciding whether to look, not
+  // navigating a console they already use.
+  if (pathname === "/" || pathname.startsWith("/share")) return null;
 
   return (
     <nav className="sidebar" aria-label="Main">
-      <Link href="/" className="sb-brand">
+      <Link href="/events" className="sb-brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="" width={30} height={30} />
         <span>Passion To Serve</span>

@@ -43,7 +43,7 @@ export default async function EventLayout({ children, params }) {
     <div className="wrap">
       {/* An explicit way out. The sidebar covers top-level navigation, but
           inside an event you also want "back to the list I came from". */}
-      <Link href="/" className="backlink">
+      <Link href="/events" className="backlink">
         ← All events
       </Link>
 
