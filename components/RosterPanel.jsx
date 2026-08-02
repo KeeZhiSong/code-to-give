@@ -46,6 +46,8 @@ export default function RosterPanel({
   // refresh forgets, because nothing records it server-side.
   const [thanking, setThanking] = useState(() => new Set());
   const [thanked, setThanked] = useState(() => new Set());
+  const [thankingAll, setThankingAll] = useState(false);
+  const [batchResult, setBatchResult] = useState(null);
 
   // Poll ticks every few seconds; without a marker a headcount moving 3 → 4
   // is invisible to anyone not staring at that exact digit.
@@ -118,14 +120,95 @@ export default function RosterPanel({
 
   const entries = [...roster.going, ...roster.notGoing];
 
+  // Who the batch thank-you goes to: people an organiser has confirmed
+  // actually turned up. Deliberately NOT everyone who said yes — the message
+  // says "you were one of N volunteers who made this happen", and sending that
+  // to a no-show is a lie told warmly.
+  const attended = entries.filter((r) => {
+    const person = peopleByPhone?.get(r.phone);
+    return (
+      r.answer === "yes" &&
+      person &&
+      event &&
+      (person.eventsAttended || []).includes(event.name)
+    );
+  });
+
+  /** Thank everyone who turned up, in one go. */
+  async function sendThanksToAll() {
+    if (!event || attended.length === 0 || thankingAll) return;
+    if (
+      !confirm(
+        `Send the thank-you message to ${attended.length} ${attended.length === 1 ? "person" : "people"} who attended ${event.name}?`
+      )
+    ) {
+      return;
+    }
+    setThankingAll(true);
+    setError("");
+    setBatchResult(null);
+    try {
+      const res = await fetch(`/api/events/${event.id}/impact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipients: attended.map((r) => ({
+            phone: r.phone,
+            name: peopleByPhone?.get(r.phone)?.name || "",
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (data.error) return setError(data.error);
+      setBatchResult(data);
+      setThanked((prev) => {
+        const next = new Set(prev);
+        (data.results || [])
+          .filter((r) => r.status === "sent")
+          .forEach((r) => next.add(r.phone));
+        return next;
+      });
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setThankingAll(false);
+    }
+  }
+
   return (
     <section className="card">
       <div className="between" style={{ marginBottom: 14 }}>
         <h2 style={{ margin: 0 }}>Roster</h2>
-        <span className="live">
-          <span className="pulse" /> live
+        <span className="row">
+          {/* Only once somebody has actually been marked attended — before
+              that there's nobody it would be truthful to thank. */}
+          {attended.length > 0 && (
+            <button onClick={sendThanksToAll} disabled={thankingAll}>
+              {thankingAll
+                ? `Sending… (${attended.length})`
+                : `Send thanks to all (${attended.length})`}
+            </button>
+          )}
+          <span className="live">
+            <span className="pulse" /> live
+          </span>
         </span>
       </div>
+
+      {batchResult && (
+        <div className={batchResult.sent === batchResult.total ? "ok" : "err"}>
+          Sent to {batchResult.sent} of {batchResult.total}.
+          {batchResult.sent < batchResult.total && (
+            <>
+              {" "}
+              {batchResult.results
+                .filter((r) => r.status !== "sent")
+                .map((r) => `${r.name || r.phone.slice(-4)} — ${r.reason}`)
+                .join("; ")}
+            </>
+          )}
+        </div>
+      )}
 
       <div className="counts">
         <div className="count yes">
