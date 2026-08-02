@@ -452,3 +452,22 @@ button.tiny { padding: 5px 11px; font-size: var(--t-micro); font-weight: 500; }
   @keyframes count-mark { 0%, 100% { opacity: 1; } 40% { opacity: 0.5; } }
   @keyframes vip-unlock { from { opacity: 0; } to { opacity: 1; } }
 }
+
+/* The one-line "describe it and we'll fill the rest" box above the event form.
+   Set apart from the fields below it because what you type here isn't saved —
+   it's an instruction, not a value. */
+.draftbox {
+  background: var(--accent-tint);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.draftbox label {
+  display: block;
+  font-size: var(--t-body);
+  font-weight: 550;
+  color: var(--accent-ink);
+}
+.draftbox .row { flex-wrap: wrap; }
+.draftbox input[type="text"] { flex: 1; min-width: 240px; background: var(--card); }

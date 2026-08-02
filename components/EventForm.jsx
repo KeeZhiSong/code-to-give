@@ -3,6 +3,7 @@
 // Create or edit an event. The poll question is the field that matters most:
 // it's what volunteers actually see on WhatsApp.
 
+import { useState } from "react";
 import { PILLARS } from "@/lib/ui/format";
 
 export default function EventForm({
@@ -13,8 +14,84 @@ export default function EventForm({
   saving,
   editing,
 }) {
+  const [note, setNote] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [draftError, setDraftError] = useState("");
+  const [drafted, setDrafted] = useState(false);
+
+  /**
+   * Fill the form from one line of shorthand.
+   *
+   * Only writes fields the model actually returned — a blank never wipes
+   * something the organiser already typed, so this is safe to hit halfway
+   * through filling the form in.
+   */
+  async function draft() {
+    if (!note.trim() || drafting) return;
+    setDrafting(true);
+    setDraftError("");
+    try {
+      const res = await fetch("/api/events/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: note }),
+      });
+      const data = await res.json();
+      if (data.error) return setDraftError(data.error);
+      const filled = Object.fromEntries(
+        Object.entries(data.draft).filter(([, v]) => v !== "")
+      );
+      setForm((f) => ({ ...f, ...filled }));
+      setDrafted(true);
+    } catch (e) {
+      setDraftError(e.message);
+    } finally {
+      setDrafting(false);
+    }
+  }
+
   return (
     <form onSubmit={onSubmit} style={{ marginTop: 14 }}>
+      {/* Only when creating. Editing an event means correcting specific
+          fields, and re-drafting from a sentence would fight that. */}
+      {!editing && (
+        <div className="draftbox">
+          <label htmlFor="ev-note">
+            Describe it in a sentence and we&apos;ll fill in the rest
+          </label>
+          <div className="row" style={{ marginTop: 6 }}>
+            <input
+              id="ev-note"
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              onKeyDown={(e) => {
+                // Enter would submit the half-empty form instead.
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  draft();
+                }
+              }}
+              placeholder="GIFTIK drive at Kranji Rec Centre next Sunday 9am–1pm, bring a reusable bag, ask for Chermaine on 8123 4567"
+            />
+            <button
+              type="button"
+              onClick={draft}
+              disabled={!note.trim() || drafting}
+            >
+              {drafting ? "Drafting…" : "Draft"}
+            </button>
+          </div>
+          {draftError && <div className="err">{draftError}</div>}
+          {drafted && !draftError && (
+            <div className="ok">
+              Drafted below — check every field before you save. Anything it
+              wasn&apos;t sure about was left blank.
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="fields">
         <label>
           <span className="muted">Event name *</span>
