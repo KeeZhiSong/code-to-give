@@ -7,6 +7,13 @@ node_modules/
 # Claude Code project settings/state — local tooling, not for the repo.
 .claude/
 
+# Agent skills installed with `npx skills add` / `npx impeccable install`.
+# Vendored third-party content, reinstallable from skills-lock.json — keeping
+# it out means a design pass shows up as a diff of our own files, not of
+# thousands of lines nobody on the team wrote.
+.agents/
+.codex/
+
 # Reference PDFs dropped in the workspace root for AI context only —
 # not deliverables. (docs/ versions of the same names are the real ones.)
 /Hackathon Brainstorming_ Passion to Serve.pdf

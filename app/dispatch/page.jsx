@@ -7,23 +7,29 @@ import {
 } from "lucide-react";
 
 // ---------- palette / type tokens ----------
+// Aliases onto the app palette in globals.css :root. These were literal hex
+// values — a fourth visual world (kraft paper + teal) alongside the console,
+// the .pf-* dashboards and the shift board. Inline styles resolve var(), so
+// the whole page re-themes from one place without touching its markup.
 const C = {
-  paper: "#F2ECDA",
-  paperDark: "#E6DDC0",
-  ink: "#232620",
-  inkSoft: "#5B5A4E",
-  kraft: "#B98F4A",
-  kraftDark: "#8A6A34",
-  teal: "#1F5C52",
-  tealDark: "#153F38",
-  tealLight: "#DCE9E4",
-  stamp: "#A63A2A",
-  line: "#C9BE9C",
-  white: "#FBFAF4",
+  paper: "var(--bg)",
+  paperDark: "var(--sunken)",
+  ink: "var(--ink)",
+  inkSoft: "var(--muted)",
+  kraft: "var(--accent)",
+  kraftDark: "var(--accent-ink)",
+  teal: "var(--yes)",
+  tealDark: "var(--yes)",
+  tealLight: "var(--yes-tint)",
+  stamp: "var(--no)",
+  line: "var(--line)",
+  white: "var(--card)",
 };
 
 const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* Fonts come from the app palette (globals.css) — Public Sans, Big Shoulders
+   and IBM Plex Mono are embedded as base64 in pts-features.css, so there is
+   nothing to fetch at runtime and no flash of unstyled text. */
 `;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -625,7 +631,7 @@ export default function EventDispatchBoard() {
         right: 14,
         border: `2px solid ${C.stamp}`,
         color: C.stamp,
-        fontFamily: "'Space Grotesk', sans-serif",
+        fontFamily: "var(--font-display)",
         fontWeight: 700,
         fontSize: 12,
         letterSpacing: 2,
@@ -650,29 +656,29 @@ export default function EventDispatchBoard() {
 
   if (!loaded) {
     return (
-      <div style={{ padding: 40, fontFamily: "'Inter', sans-serif", color: C.inkSoft }}>Loading dispatch board…</div>
+      <div style={{ padding: 40, fontFamily: "var(--font-sans)", color: C.inkSoft }}>Loading dispatch board…</div>
     );
   }
 
   return (
-    <div style={{ background: C.paper, minHeight: "100%", fontFamily: "'Inter', sans-serif", color: C.ink }}>
+    <div style={{ background: C.paper, minHeight: "100%", fontFamily: "var(--font-sans)", color: C.ink }}>
       <style>{FONTS}</style>
 
       {/* header */}
       <div style={{ background: C.ink, color: C.paper, padding: "22px 28px", borderBottom: `6px solid ${C.kraft}` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <ClipboardList size={22} color={C.kraft} />
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, letterSpacing: 1.5, textTransform: "uppercase" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, letterSpacing: 1.5, textTransform: "uppercase" }}>
             Dispatch Board
           </div>
         </div>
-        <div style={{ fontSize: 13, color: "#C9C3AE", marginTop: 4, fontFamily: "'IBM Plex Mono', monospace" }}>
+        <div style={{ fontSize: 13, color: "#C9C3AE", marginTop: 4, fontFamily: "var(--font-mono)" }}>
           Passion To Serve — Items · Knowledge · Peace — one clone per next occurrence
         </div>
       </div>
 
       {saveError && (
-        <div style={{ background: "#F6E3DB", color: C.stamp, padding: "8px 28px", fontSize: 13, fontFamily: "'IBM Plex Mono', monospace" }}>
+        <div style={{ background: "#F6E3DB", color: C.stamp, padding: "8px 28px", fontSize: 13, fontFamily: "var(--font-mono)" }}>
           Storage unavailable right now — changes won't be saved between visits.
         </div>
       )}
@@ -686,7 +692,7 @@ export default function EventDispatchBoard() {
               style={{
                 display: "flex", alignItems: "center", gap: 6, background: C.teal, color: C.white,
                 border: "none", borderRadius: 6, padding: "8px 14px", fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif", fontSize: 13,
+                fontFamily: "var(--font-sans)", fontSize: 13,
               }}
             >
               <Plus size={15} /> New template
@@ -698,7 +704,7 @@ export default function EventDispatchBoard() {
               <div
                 style={{
                   display: "flex", alignItems: "center", gap: 8, marginBottom: 14,
-                  fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 15,
+                  fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15,
                   textTransform: "uppercase", letterSpacing: 1, color: CATEGORY_ACCENT[group.category] || C.ink,
                 }}
               >
@@ -719,12 +725,12 @@ export default function EventDispatchBoard() {
                         boxShadow: "0 1px 0 rgba(0,0,0,0.04)", position: "relative",
                       }}
                     >
-                      <div style={{ background: C.kraft, color: C.ink, padding: "10px 14px", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}>
+                      <div style={{ background: C.kraft, color: "var(--accent-ink)", padding: "10px 14px", fontFamily: "var(--font-display)", fontWeight: 700 }}>
                         {t.name}
                       </div>
                       <Perforation />
                       <div style={{ padding: "14px" }}>
-                        <div style={{ display: "flex", gap: 14, fontSize: 12, color: C.inkSoft, fontFamily: "'IBM Plex Mono', monospace", marginBottom: 12 }}>
+                        <div style={{ display: "flex", gap: 14, fontSize: 12, color: C.inkSoft, fontFamily: "var(--font-mono)", marginBottom: 12 }}>
                           <span>{t.tasks.length} tasks</span>
                           <span>{t.logisticsPartners.length} partners</span>
                           <span>{t.volunteerRoles.length} roles</span>
@@ -786,7 +792,7 @@ export default function EventDispatchBoard() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(35,38,32,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div style={{ background: C.white, borderRadius: 10, width: 380, maxWidth: "100%", overflow: "hidden", position: "relative" }}>
             <div style={{ background: C.ink, color: C.paper, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}>New occurrence</div>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}>New occurrence</div>
               <X size={18} style={{ cursor: "pointer" }} onClick={() => setView("gallery")} />
             </div>
             <div style={{ padding: 20 }}>
@@ -800,7 +806,7 @@ export default function EventDispatchBoard() {
                 type="date"
                 value={cloneForm.date}
                 onChange={(e) => setCloneForm((f) => ({ ...f, date: e.target.value }))}
-                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "'Inter', sans-serif" }}
+                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "var(--font-sans)" }}
               />
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 4, color: C.inkSoft }}>
                 <MapPin size={12} style={{ verticalAlign: -1, marginRight: 4 }} /> Venue
@@ -810,7 +816,7 @@ export default function EventDispatchBoard() {
                 placeholder="e.g. Barangay Covered Court"
                 value={cloneForm.venue}
                 onChange={(e) => setCloneForm((f) => ({ ...f, venue: e.target.value }))}
-                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 18, fontFamily: "'Inter', sans-serif" }}
+                style={{ width: "100%", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 18, fontFamily: "var(--font-sans)" }}
               />
               <button
                 onClick={confirmClone}
@@ -819,7 +825,7 @@ export default function EventDispatchBoard() {
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   background: (!cloneForm.date || !cloneForm.venue) ? "#CFC9AE" : C.stamp, color: C.white, border: "none",
                   borderRadius: 6, padding: "12px", fontWeight: 700, letterSpacing: 1, cursor: (!cloneForm.date || !cloneForm.venue) ? "not-allowed" : "pointer",
-                  fontFamily: "'Space Grotesk', sans-serif", textTransform: "uppercase", fontSize: 13,
+                  fontFamily: "var(--font-display)", textTransform: "uppercase", fontSize: 13,
                 }}
               >
                 <Stamp size={15} /> Stamp &amp; clone
@@ -831,7 +837,7 @@ export default function EventDispatchBoard() {
                   style={{
                     marginTop: 12,
                     fontSize: 13,
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: "var(--font-sans)",
                     color: cloneStatus.state === "error" ? C.stamp : C.teal,
                   }}
                 >
@@ -857,18 +863,18 @@ export default function EventDispatchBoard() {
           <button onClick={() => setView("gallery")} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: C.teal, cursor: "pointer", marginBottom: 16, fontSize: 13, padding: 0 }}>
             <ArrowLeft size={15} /> Back to templates
           </button>
-          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>New event template</div>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>New event template</div>
           <input
             placeholder="Template name (e.g. Coastal Cleanup Day)"
             value={newTmpl.name}
             onChange={(e) => setNewTmpl((f) => ({ ...f, name: e.target.value }))}
-            style={{ width: "100%", padding: "10px 12px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 }}
+            style={{ width: "100%", padding: "10px 12px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "var(--font-display)", fontWeight: 700 }}
           />
           <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 4, color: C.inkSoft }}>Pillar</label>
           <select
             value={newTmpl.category}
             onChange={(e) => setNewTmpl((f) => ({ ...f, category: e.target.value }))}
-            style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "'Inter', sans-serif", background: C.white }}
+            style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.line}`, borderRadius: 6, marginBottom: 14, fontFamily: "var(--font-sans)", background: C.white }}
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -887,7 +893,7 @@ export default function EventDispatchBoard() {
                 rows={4}
                 value={newTmpl[f.key]}
                 onChange={(e) => setNewTmpl((s) => ({ ...s, [f.key]: e.target.value }))}
-                style={{ width: "100%", padding: "10px 12px", border: `1px solid ${C.line}`, borderRadius: 6, fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, resize: "vertical" }}
+                style={{ width: "100%", padding: "10px 12px", border: `1px solid ${C.line}`, borderRadius: 6, fontFamily: "var(--font-mono)", fontSize: 13, resize: "vertical" }}
               />
             </div>
           ))}
@@ -913,10 +919,10 @@ export default function EventDispatchBoard() {
 
           <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: 22, position: "relative", marginBottom: 20 }}>
             <StampBadge />
-            <div style={{ fontSize: 11, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'IBM Plex Mono', monospace" }}>
+            <div style={{ fontSize: 12, color: C.inkSoft, textTransform: "uppercase", letterSpacing: 1, fontFamily: "var(--font-mono)" }}>
               cloned from {activeEvent.templateName}
             </div>
-            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 20, margin: "4px 0 8px" }}>
+            <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, margin: "4px 0 8px" }}>
               {activeEvent.templateName}
             </div>
             <div style={{ display: "flex", gap: 18, fontSize: 13, color: C.inkSoft }}>
@@ -977,10 +983,10 @@ function ChecklistCard({ title, icon, items, doneKey, onToggle, onAdd, onRemove,
   return (
     <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div style={{ background: C.tealLight, color: C.tealDark, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", fontSize: 13 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, fontFamily: "var(--font-display)", fontSize: 13 }}>
           {icon} {title}
         </div>
-        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>{doneCount}/{items.length}</div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{doneCount}/{items.length}</div>
       </div>
       
       <div style={{ padding: "6px 0", flex: 1 }}>
@@ -1024,7 +1030,7 @@ function ChecklistCard({ title, icon, items, doneKey, onToggle, onAdd, onRemove,
           onChange={(e) => setNewItemText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder={`Add to ${title.toLowerCase()}...`}
-          style={{ flex: 1, padding: "6px 10px", border: `1px solid ${C.line}`, borderRadius: 4, fontSize: 12, fontFamily: "'Inter', sans-serif" }}
+          style={{ flex: 1, padding: "6px 10px", border: `1px solid ${C.line}`, borderRadius: 4, fontSize: 12, fontFamily: "var(--font-sans)" }}
         />
         <button
           onClick={handleAdd}
