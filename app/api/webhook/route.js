@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { handleWebhook } from "../../../lib/handleWebhook.js";
 
 export const dynamic = "force-dynamic";
+// A belt to the AI fallback's braces. GreenAPI reads a delivery that never
+// completes as a failure and the vote is lost, so this endpoint must always
+// answer — even if something downstream misbehaves in a way we didn't predict.
+export const maxDuration = 20;
 
 /**
  * Vercel path: GreenAPI POSTs notifications straight here.
